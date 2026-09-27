@@ -18,4 +18,6 @@ repos:
     rev: v2.3.1
     hooks:
       - id: mypy
-        additional_dependencies: [types-requests] # Add types as needed
+        additional_dependencies:
+          - fastapi>=0.141.1
+          - types-requests # Add types as needed

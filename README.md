@@ -13,7 +13,7 @@ uv sync
 
 ### CI/CD
 
-Every push and pull request will run some code quality checks (ruff linting, formatting and mypy typing).
+Every push and and PR to main will run some code quality checks (ruff linting, formatting and mypy typing).
 
 A pre-commit hook is in place:
 ```

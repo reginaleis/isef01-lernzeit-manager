@@ -20,4 +20,5 @@ repos:
       - id: mypy
         additional_dependencies:
           - fastapi>=0.141.1
+          - sqlalchemy>=2.1.6
           - types-requests # Add types as needed

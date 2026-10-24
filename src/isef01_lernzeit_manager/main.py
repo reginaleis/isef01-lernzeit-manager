@@ -14,6 +14,7 @@ from .api import (
     sessions_router,
     timer_router,
 )
+from .persistence import models as _models  # noqa: F401
 from .persistence.database import Base, engine
 
 

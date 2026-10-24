@@ -61,7 +61,7 @@ flowchart TB
 | **API Layer** | [`main.py`](src/isef01_lernzeit_manager/main.py) and module specific routes in [`/api`](src/isef01_lernzeit_manager/api/) | Python and FastAPI | Defines HTTP routes, converts HTTP input/output, and calls business-logic services. |
 | **Validation Schemas** | `tbd` | Pydantic | Validation and serialization for API Operations|
 | **Business Logic** | [`/services`](src/isef01_lernzeit_manager/services/) | Python | Contains use cases and domain rules. No direct HTTP or SQL logic. |
-| **Data Access Layer** | [`/persistence/data_access`](src/isef01_lernzeit_manager/persistence/dataacess/) | Python | Translates domain operations into database queries. |
+| **Data Access Layer** | [`/persistence/data_access`](src/isef01_lernzeit_manager/persistence/data_access/) | Python | Translates domain operations into database queries. |
 | **Database** | [`/persistence`](src/isef01_lernzeit_manager/persistence/) | SqlAlchemy & Sqlite | Configuration of database. |
 
 

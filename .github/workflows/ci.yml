@@ -24,6 +24,9 @@ jobs:
       - name: Install dependencies
         run: uv sync --group lint --locked
 
+      - name: Check database schema
+        run: uv run python scripts/check_schema.py
+
       - name: Lint with Ruff
         run: uv run ruff check .
 

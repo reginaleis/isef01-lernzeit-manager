@@ -64,6 +64,61 @@ flowchart TB
 | **Data Access Layer** | [`/persistence/data_access`](src/isef01_lernzeit_manager/persistence/data_access/) | Python | Translates domain operations into database queries. |
 | **Database** | [`/persistence`](src/isef01_lernzeit_manager/persistence/) | SqlAlchemy & Sqlite | Configuration of database. |
 
+### Database schema
+
+The database design is defined in [`datenbank_entwurf.sql`](docs/database/datenbank_entwurf.sql).
+
+```mermaid
+erDiagram
+    module ||--o{ lernziele : "contains"
+    lernziele ||--o{ zwischenziele : "contains"
+    lernziele ||--o{ lernzeiten : "records"
+    zwischenziele o|--o{ lernzeiten : "optionally records"
+
+    module {
+        TEXT id PK
+        TEXT title
+        REAL ects
+        TEXT exam_type
+        TEXT completed_on
+    }
+
+    lernziele {
+        INTEGER id PK
+        TEXT title
+        TEXT description
+        TEXT module_id FK
+        TEXT start_date
+        TEXT end_date
+        INTEGER accumulated_study_time
+        TEXT status
+    }
+
+    zwischenziele {
+        INTEGER id PK
+        TEXT title
+        TEXT description
+        INTEGER lernziel_id FK
+        TEXT start_date
+        TEXT end_date
+        INTEGER accumulated_study_time
+        TEXT status
+    }
+
+    lernzeiten {
+        INTEGER id PK
+        INTEGER lernziel_id FK
+        INTEGER zwischenziel_id FK
+        TEXT date
+        INTEGER duration
+    }
+```
+The SQL and SQLAlchemy definitions are compared in CI with:
+
+```bash
+uv run python scripts/check_schema.py
+```
+
 
 ### Tests
 

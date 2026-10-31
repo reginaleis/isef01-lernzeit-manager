@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="de">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,6 +7,94 @@
   <link rel="stylesheet" href="/static/css/styles.css">
 </head>
 <body>
-  <!-- FastAPI inserts the application content here. -->
+  <header>
+    <h1>Lernzeit-Manager</h1>
+    <p>Entwurf mit Beispieldaten </p>
+    <nav aria-label="Seitenbereiche">
+        <a href="#neues-lernziel">Neues Lernziel anlegen</a>
+        <a href="#lernziele">Lernziele ansehen</a>
+    </nav>
+</header>
+
+<main>
+    <section id="neues-lernziel">
+        <h2>Neues Lernziel anlegen</h2>
+
+        <form action="/api/goals/" method="post">
+            <p>
+                <label>
+                    Titel des Lernziels<br>
+                    <input type="text" name="title" required>
+                </label>
+            </p>
+            
+            <p>
+                <label>
+                    Modul<br>
+                    <select name="module_id" required>
+                        <option value="">Bitte auswaehlen</option>
+                        <option value="ISEF01">Lernzeit-Manager</option>
+                        <option value="IDBS01">Datenmodellierung und Datenbanksysteme</option>
+                    </select>
+                </label>
+            </p>
+            <p>
+                <label>
+                    Beschreibung<br>
+                    <textarea name="description" rows="3"></textarea>
+                </label>
+            </p>
+                        <p>
+                <label>
+                    Lernbeginn<br>
+                    <input type="date" name="start_date">
+                </label>
+            </p>
+
+            <p>
+                <label>
+                    Zieldatum<br>
+                    <input type="date" name="end_date">
+                </label>
+            </p>
+            <button type="submit" disabled>Lernziel speichern</button>
+        </form>
+            
+            <p id="rueckmeldung" role="status" aria-live="polite"></p>
+    </section>
+    <section id="lernziele">
+        <h2>Lernziele einsehen</h2>
+        <table>
+            <caption>Beispiel Lernzeit</caption>
+            <thead>
+                <tr>
+                    <th scope="col">Lernziel</th>
+                    <th scope="col">Modul</th>
+                    <th scope="col">Anfangsdatum</th>
+                    <th scope="col">Zieldatum</th>
+                    <th scope="col">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Datenbankmodell fertigstellen</td>
+                    <td>ISEF01</td>
+                    <td>31.10.2026</td>
+                    <td>31.12.2026</td>
+                    <td>In Bearbeitung</td>
+                </tr>
+                <tr>
+                    <td>Datenmodellierung und Datenbanksysteme</td>
+                    <td>IDBS01</td>
+                    <td>01.11.2026</td>
+                    <td>30.11.2026</td>
+                    <td>Noch nicht begonnen</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+
+</main>
 </body>
 </html>

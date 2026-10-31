@@ -14,12 +14,10 @@
         <a href="#neues-lernziel">Neues Lernziel anlegen</a>
         <a href="#lernziele">Lernziele ansehen</a>
     </nav>
-</header>
-
-<main>
+  </header>
+  <main>
     <section id="neues-lernziel">
         <h2>Neues Lernziel anlegen</h2>
-
         <form action="/api/goals/" method="post">
             <p>
                 <label>
@@ -27,7 +25,6 @@
                     <input type="text" name="title" required>
                 </label>
             </p>
-            
             <p>
                 <label>
                     Modul<br>
@@ -44,13 +41,12 @@
                     <textarea name="description" rows="3"></textarea>
                 </label>
             </p>
-                        <p>
+            <p>
                 <label>
                     Lernbeginn<br>
                     <input type="date" name="start_date">
                 </label>
             </p>
-
             <p>
                 <label>
                     Zieldatum<br>
@@ -59,7 +55,6 @@
             </p>
             <button type="submit" disabled>Lernziel speichern</button>
         </form>
-            
             <p id="rueckmeldung" role="status" aria-live="polite"></p>
     </section>
     <section id="lernziele">
@@ -93,8 +88,6 @@
             </tbody>
         </table>
     </section>
-
-
-</main>
+  </main>
 </body>
 </html>

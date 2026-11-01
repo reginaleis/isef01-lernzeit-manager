@@ -16,7 +16,7 @@ from .api import (
     timer_router,
 )
 from .logging_config import configure_logging
-from .persistence.database import Base, engine
+from .persistence.database import Base, engine, migrate_database
 
 configure_logging()
 logger = logging.getLogger(__name__)
@@ -26,6 +26,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("Starting backend application")
     async with engine.begin() as conn:
+        await conn.run_sync(migrate_database)
         await conn.run_sync(Base.metadata.create_all)
     logger.info("Database tables initialized")
     yield
@@ -82,7 +83,7 @@ app.include_router(sessions_router)
 @app.get("/")
 def read_root() -> dict[str, str]:
     return {
-        "message": "Willkomment in der ISEF01 Lernzeit Manager API. Unter /docs gibt's die API Dokumentation.",
+        "message": "Willkommen in der ISEF01 Lernzeit Manager API. Unter /docs gibt's die API Dokumentation.",
         "status": "ok",
     }
 

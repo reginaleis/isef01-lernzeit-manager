@@ -5,6 +5,7 @@ from pathlib import Path
 from time import perf_counter
 
 from fastapi import FastAPI, Request, Response
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from .api import (
@@ -81,11 +82,10 @@ app.include_router(sessions_router)
 
 
 @app.get("/")
-def read_root() -> dict[str, str]:
-    return {
-        "message": "Willkommen in der ISEF01 Lernzeit Manager API. Unter /docs gibt's die API Dokumentation.",
-        "status": "ok",
-    }
+def read_root() -> HTMLResponse:
+    page = TEMPLATE_FILE.read_text()
+    content = "<main><h1>Hello, World!</h1></main>"
+    return HTMLResponse(page.replace("  <!-- FastAPI inserts the application content here. -->", content))
 
 
 @app.get("/api/health")

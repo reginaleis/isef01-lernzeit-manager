@@ -1,5 +1,7 @@
 """Module specific handling of database operations."""
 
+from collections.abc import Mapping
+
 from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,9 +14,9 @@ class LernzieleDAO:
     def __init__(self, db_session: AsyncSession):
         self.db = db_session
 
-    async def create(self, lernziel_data: dict) -> Lernziel:
+    async def create(self, lernziel_data: Mapping[str, object]) -> Lernziel:
         """Create a new Lernziel in the database."""
-        new_lernziel = Lernziel(**lernziel_data)
+        new_lernziel = Lernziel(**dict(lernziel_data))
         self.db.add(new_lernziel)
         await self.db.commit()
         await self.db.refresh(new_lernziel)

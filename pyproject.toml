@@ -33,7 +33,7 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"] # Pyflakes, Error, Isort, Upgrade, Bugbear
-ignore = []
+ignore = ["B008"] # FastAPI dependencies use Depends() in argument defaults
 
 [tool.mypy]
 python_version = "3.13"

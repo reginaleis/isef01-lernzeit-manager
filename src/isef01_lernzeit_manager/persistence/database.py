@@ -1,6 +1,7 @@
 """Database engine configuration."""
 
 import logging
+import os
 from collections.abc import AsyncIterator
 
 from sqlalchemy.ext.asyncio import (
@@ -10,7 +11,7 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.orm import DeclarativeBase
 
-DATABASE_URL = "sqlite+aiosqlite:///./isef01.db"
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./isef01.db")
 
 logger = logging.getLogger(__name__)
 

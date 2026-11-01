@@ -1,8 +1,9 @@
 """Backend service for Lernziele."""
 
 import logging
+from calendar import monthrange
 from collections.abc import Mapping
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,6 +12,15 @@ from isef01_lernzeit_manager.persistence.tables import Lernziel
 from isef01_lernzeit_manager.pydantic_models import LernzieleCreate, LernzieleUpdate
 
 logger = logging.getLogger(__name__)
+
+
+def add_calendar_months(value: date, months: int) -> date:
+    """Add calendar months while clamping dates to the target month's end."""
+    month_index = value.year * 12 + value.month - 1 + months
+    year, month_index = divmod(month_index, 12)
+    month = month_index + 1
+    day = min(value.day, monthrange(year, month)[1])
+    return value.replace(year=year, month=month, day=day)
 
 
 class LernzieleService:
@@ -69,5 +79,5 @@ class LernzieleService:
         """Retrieve Lernziele for the next 6 months."""
         logger.info("Fetching Lernziele for the next 6 months")
         today = datetime.now(UTC).date()
-        six_months_later = today + timedelta(days=6 * 30)
+        six_months_later = add_calendar_months(today, 6)
         return await self.dao.get_lernziele_in_range(from_date=today, to_date=six_months_later)

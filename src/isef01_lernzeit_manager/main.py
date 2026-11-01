@@ -7,6 +7,7 @@ from fastapi.staticfiles import StaticFiles
 
 from .api import (
     analytics_router,
+    demo_router,
     goals_router,
     milestones_router,
     notifications_router,
@@ -38,6 +39,7 @@ STATIC_DIR = PACKAGE_DIR / "static"
 app.include_router(goals_router)
 app.include_router(milestones_router)
 app.include_router(analytics_router)
+app.include_router(demo_router)
 app.include_router(timer_router)
 app.include_router(notifications_router)
 app.include_router(sessions_router)

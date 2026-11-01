@@ -1,0 +1,82 @@
+{
+  "modules": [
+    {
+      "id": "ISEF01",
+      "title": "Software Engineering Fundamentals",
+      "ects": 5.0,
+      "exam_type": "Projektarbeit"
+    },
+    {
+      "id": "DBS01",
+      "title": "Database Systems",
+      "ects": 5.0,
+      "exam_type": "Klausur"
+    }
+  ],
+  "lernziele": [
+    {
+      "id": 1,
+      "title": "MS0",
+      "description": "Meilensteinplan bereitgestellt.",
+      "module_id": "ISEF01",
+      "start_date": "2026-11-01",
+      "end_date": "2026-11-30",
+      "accumulated_study_time": 120,
+      "status": "in_progress"
+    },
+    {
+      "id": 2,
+      "title": "MS1",
+      "description": "Projektkonfiguration bereitgestellt.",
+      "module_id": "DBS01",
+      "start_date": "2026-11-10",
+      "end_date": "2026-12-15",
+      "accumulated_study_time": 0,
+      "status": "not_started"
+    }
+  ],
+  "zwischenziele": [
+    {
+      "id": 1,
+      "title": "PDF in Redmine hochladen.",
+      "description": null,
+      "lernziel_id": 1,
+      "start_date": "2026-11-01",
+      "end_date": "2026-11-10",
+      "accumulated_study_time": 120,
+      "status": "completed"
+    },
+    {
+      "id": 2,
+      "title": "Projektkonfiguration mit dem Team reviewen.",
+      "description": null,
+      "lernziel_id": 1,
+      "start_date": "2026-11-11",
+      "end_date": "2026-11-30",
+      "accumulated_study_time": 240,
+      "status": "in_progress"
+    },
+    {
+      "id": 3,
+      "title": "Projektkonfiguration in Redmine hochladen.",
+      "description": null,
+      "lernziel_id": 2,
+      "start_date": "2026-11-10",
+      "end_date": "2026-11-25",
+      "accumulated_study_time": 0,
+      "status": "not_started"
+    }
+  ],
+  "lernzeiten": [
+    {
+      "lernziel_id": 1,
+      "date": "2026-11-01",
+      "duration": 60
+    },
+    {
+      "lernziel_id": 1,
+      "date": "2026-11-02",
+      "duration": 60
+    }
+  ]
+}

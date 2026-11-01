@@ -28,12 +28,12 @@ requires = ["uv_build>=0.12.17,<0.13.0"]
 build-backend = "uv_build"
 
 [tool.ruff]
-line-length = 88
+line-length = 120
 target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"] # Pyflakes, Error, Isort, Upgrade, Bugbear
-ignore = []
+ignore = ["B008"] # FastAPI dependencies use Depends() in argument defaults
 
 [tool.mypy]
 python_version = "3.13"

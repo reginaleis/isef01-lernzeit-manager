@@ -8,7 +8,6 @@ from fastapi import FastAPI, Request, Response
 from fastapi.staticfiles import StaticFiles
 
 from .api import (
-    analytics_router,
     demo_router,
     goals_router,
     milestones_router,
@@ -70,7 +69,6 @@ async def log_requests(
 
 app.include_router(goals_router)
 app.include_router(milestones_router)
-app.include_router(analytics_router)
 app.include_router(demo_router)
 app.include_router(timer_router)
 app.include_router(notifications_router)

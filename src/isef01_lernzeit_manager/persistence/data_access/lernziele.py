@@ -2,6 +2,7 @@
 
 import logging
 from collections.abc import Mapping
+from datetime import date
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -59,9 +60,14 @@ class LernzieleDAO:
         result = await self.db.scalars(stmt)
         return result.one_or_none()
 
-    async def get_lernziele_in_range(self, from_date: str, to_date: str) -> list[Lernziel]:
+    async def get_lernziele_in_range(self, from_date: date, to_date: date) -> list[Lernziel]:
         """Lernziele in einem bestimmten Datumsbereich abrufen."""
-        logger.info(f"Fetching Lernziele where start_date is between {from_date} and {to_date}")
-        stmt = select(Lernziel).where(Lernziel.start_date >= from_date, Lernziel.start_date <= to_date)
+        from_date_value = from_date.isoformat()
+        to_date_value = to_date.isoformat()
+        logger.info(f"Fetching Lernziele where start_date is between {from_date_value} and {to_date_value}")
+        stmt = select(Lernziel).where(
+            Lernziel.start_date >= from_date_value,
+            Lernziel.start_date <= to_date_value,
+        )
         result = await self.db.scalars(stmt)
         return list(result.all())

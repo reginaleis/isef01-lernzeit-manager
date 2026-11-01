@@ -2,7 +2,7 @@
 
 import logging
 from collections.abc import Mapping
-from datetime import date, timedelta
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -68,6 +68,6 @@ class LernzieleService:
     async def get_lernziele_next_6_months(self) -> list[Lernziel]:
         """Retrieve Lernziele for the next 6 months."""
         logger.info("Fetching Lernziele for the next 6 months")
-        today = date.today().isoformat()
-        six_months_later = (date.today() + timedelta(days=6 * 30)).isoformat()
+        today = datetime.now(UTC).date()
+        six_months_later = today + timedelta(days=6 * 30)
         return await self.dao.get_lernziele_in_range(from_date=today, to_date=six_months_later)

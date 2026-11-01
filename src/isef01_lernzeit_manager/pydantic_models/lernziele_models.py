@@ -2,12 +2,11 @@
 Pydantic models für die Validierung von API responses für Lernziele.
 """
 
-from datetime import datetime
 from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from isef01_lernzeit_manager.pydantic_models.helpers import check_dates_start_before_end
+from isef01_lernzeit_manager.pydantic_models.helpers import UTCDate, check_dates_start_before_end
 
 LernzielStatus = Literal["not_started", "in_progress", "completed", "overdue"]
 
@@ -18,8 +17,8 @@ class LernzieleCreate(BaseModel):
     title: Annotated[str, Field(min_length=1)]
     description: str | None = None
     module_id: Annotated[str, Field(min_length=1)]
-    start_date: datetime | None = None
-    end_date: datetime | None = None
+    start_date: UTCDate = None
+    end_date: UTCDate = None
     status: LernzielStatus = "not_started"
     accumulated_study_time_min: int = Field(default=0, ge=0)
 
@@ -39,8 +38,8 @@ class LernzieleResponse(BaseModel):
     title: Annotated[str, Field(min_length=1)]
     description: str | None = None
     module_id: Annotated[str, Field(min_length=1)]
-    start_date: datetime | None = None
-    end_date: datetime | None = None
+    start_date: UTCDate = None
+    end_date: UTCDate = None
     status: LernzielStatus
     accumulated_study_time_min: int = Field(ge=0)
 
@@ -58,8 +57,8 @@ class LernzieleUpdate(BaseModel):
 
     title: Annotated[str, Field(min_length=1)] | None = None
     description: str | None = None
-    start_date: datetime | None = None
-    end_date: datetime | None = None
+    start_date: UTCDate = None
+    end_date: UTCDate = None
     status: LernzielStatus | None = None
     accumulated_study_time_min: int | None = Field(default=None, ge=0)
 

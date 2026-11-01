@@ -5,13 +5,13 @@ API routes Lernziele.
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from isef01_lernzeit_manager.api.pydantic_models import (
+from isef01_lernzeit_manager.persistence.database import get_session
+from isef01_lernzeit_manager.pydantic_models import (
     LernzieleCreate,
     LernzieleResponse,
     LernzieleUpdate,
     ZwischenzielResponse,
 )
-from isef01_lernzeit_manager.persistence.database import get_session
 from isef01_lernzeit_manager.services import LernzieleService
 
 router = APIRouter(prefix="/api/lernziele", tags=["lernziele"])

@@ -17,7 +17,6 @@ from .api import (
     timer_router,
 )
 from .logging_config import configure_logging
-from .persistence import models as _models  # noqa: F401
 from .persistence.database import Base, engine
 
 configure_logging()

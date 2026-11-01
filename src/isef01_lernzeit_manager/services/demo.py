@@ -8,7 +8,7 @@ from typing import Any, cast
 from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from isef01_lernzeit_manager.persistence.models import Lernzeiten, Lernziel, Module, Zwischenziel
+from isef01_lernzeit_manager.persistence.tables import Lernzeiten, Lernziel, Module, Zwischenziel
 
 DEMO_DATA_FILE = Path(__file__).parent.parent / "persistence" / "demo_data.json"
 logger = logging.getLogger(__name__)

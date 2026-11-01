@@ -6,7 +6,7 @@ from collections.abc import Mapping
 from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from isef01_lernzeit_manager.persistence.models import Lernziel
+from isef01_lernzeit_manager.persistence.tables import Lernziel
 
 logger = logging.getLogger(__name__)
 

@@ -1,11 +1,13 @@
 """Backend service for Lernziele."""
 
 import logging
+from collections.abc import Mapping
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from isef01_lernzeit_manager.persistence.data_access import LernzieleDAO
-from isef01_lernzeit_manager.persistence.models import Lernziel
+from isef01_lernzeit_manager.persistence.tables import Lernziel
+from isef01_lernzeit_manager.pydantic_models import LernzieleCreate
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +21,11 @@ class LernzieleService:
         logger.info("Fetching all Lernziele")
         return await self.dao.get_all()
 
-    async def create_lernziel(self, lernziel_data: dict[str, object]) -> Lernziel:
-        """Neues Lernziel anlegen."""
+    async def create_lernziel(
+        self,
+        lernziel_data: LernzieleCreate | Mapping[str, object],
+    ) -> Lernziel:
+        """Validate and persist a new Lernziel."""
         logger.info("Creating Lernziel")
-        return await self.dao.create(lernziel_data)
+        lernziel = LernzieleCreate.model_validate(lernziel_data)
+        return await self.dao.create(lernziel.model_dump(mode="json"))

@@ -37,6 +37,13 @@ Create Table if not exists lernziele (
 
     start_date text,
     end_date text,
+
+    planned_study_time integer 
+        check(
+            planned_study_time is NULL or( 
+                typeof(planned_study_time)= 'integer'
+                AND planed_study_time > 0 )
+        ),
     
     accumulated_study_time integer not NULL DEFAULT 0
         check(

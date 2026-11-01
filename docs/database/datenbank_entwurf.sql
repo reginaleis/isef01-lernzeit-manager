@@ -1,4 +1,4 @@
--- LERNZEIT_MANAGER_ENTWURF
+-- LERNZEIT_MANAGER_ENTWURF 
 
 
 PRAGMA foreign_keys = ON;
@@ -13,7 +13,7 @@ Create Table if not exists module (
         Check( length(trim(title)) > 0),
     ects Real not NULL
         check (typeof(ects) IN ('integer', 'real') AND ects > 0),
-    exam_type text,
+    exam_type text, 
     completed_on text,
 
     -- NULL ==> Modul wurde (noch) nicht abgeschlossen
@@ -22,33 +22,33 @@ Create Table if not exists module (
         completed_on is NULL OR (
             length(completed_on) = 10
             AND date(completed_on, '+0 days') IS completed_on
-        )
+        ) 
     )
 );
 
 
 Create Table if not exists lernziele (
     id integer primary key,
-    title text not NULL
+    title text not NULL 
         check(length(trim(title)) > 0),
 
-    description text,
+    description text, 
     module_id text not NULL,
 
     start_date text,
     end_date text,
-
+    
     accumulated_study_time integer not NULL DEFAULT 0
         check(
             typeof(accumulated_study_time) = 'integer'
             AND accumulated_study_time >= 0
         ),
-
+    
     status text not NULL DEFAULT 'not_started'
         check (status in('not_started', 'in_progress', 'completed', 'overdue')),
 
-
-    foreign key (module_id) REFERENCES module(id) ON DELETE RESTRICT,
+    
+    foreign key (module_id) REFERENCES module(id) ON DELETE RESTRICT, 
     check (
         start_date is NULL OR (
             length(start_date) = 10
@@ -61,18 +61,18 @@ Create Table if not exists lernziele (
     )
     ),
     check (start_date is NULL OR end_date is NULL OR end_date >= start_date)
-);
+); 
 
 
 Create table if not exists zwischenziele (
     id integer primary key,
-    title text not NULL
+    title text not NULL 
         check (length(trim(title))>0),
     description text,
     lernziel_id integer not NULL,
         start_date text,
         end_date text,
-        accumulated_study_time integer not NULL DEFAULT 0
+        accumulated_study_time integer not NULL DEFAULT 0 
         check (
             typeof(accumulated_study_time) = 'integer'
             AND accumulated_study_time >= 0
@@ -80,16 +80,16 @@ Create table if not exists zwischenziele (
     status text not NULL DEFAULT 'not_started'
         check (status IN('not_started', 'in_progress','completed', 'overdue')),
 
-    foreign key (lernziel_id) REFERENCES lernziele(id) on DELETE RESTRICT,
+    foreign key (lernziel_id) REFERENCES lernziele(id) on DELETE RESTRICT, 
 
     UNIQUE (id, lernziel_id),
         check(
             start_date is NULL OR (
-                length(start_date)= 10
+                length(start_date)= 10 
                 AND date(start_date, '+0 days') is start_date
             )
         ),
-        check (
+        check ( 
             end_date is NULL OR (
                 length(end_date) = 10
                 AND date(end_date, '+0 days') is end_date
@@ -112,7 +112,7 @@ Create table if not exists lernzeiten (
 
     REFERENCES zwischenziele (id, lernziel_id) on DELETE RESTRICT,
     check (length(date) = 10 AND date(date,'+0 days') IS date)
-
+    
 );
 
 Create INDEX if not EXISTS idx_lernziele_module_id

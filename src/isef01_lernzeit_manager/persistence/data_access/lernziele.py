@@ -1,11 +1,14 @@
 """Module specific handling of database operations."""
 
+import logging
 from collections.abc import Mapping
 
 from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from isef01_lernzeit_manager.persistence.models import Lernziel
+
+logger = logging.getLogger(__name__)
 
 
 class LernzieleDAO:
@@ -16,6 +19,7 @@ class LernzieleDAO:
 
     async def create(self, lernziel_data: Mapping[str, object]) -> Lernziel:
         """Create a new Lernziel in the database."""
+        logger.info("Persisting new Lernziel")
         new_lernziel = Lernziel(**dict(lernziel_data))
         self.db.add(new_lernziel)
         await self.db.commit()
@@ -24,6 +28,7 @@ class LernzieleDAO:
 
     async def get_all(self) -> list[Lernziel]:
         """Retrieve all Lernziele from the database."""
+        logger.info("Loading all Lernziele")
         stmt = select(Lernziel)
         result = await self.db.scalars(stmt)
         return list(result.all())

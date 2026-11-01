@@ -1,6 +1,7 @@
 """Application service for restoring demo data."""
 
 import json
+import logging
 from pathlib import Path
 from typing import Any, cast
 
@@ -10,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from isef01_lernzeit_manager.persistence.models import Lernzeiten, Lernziel, Module, Zwischenziel
 
 DEMO_DATA_FILE = Path(__file__).parent.parent / "persistence" / "demo_data.json"
+logger = logging.getLogger(__name__)
 
 
 class DemoService:
@@ -20,6 +22,7 @@ class DemoService:
 
     async def reset_data(self) -> None:
         """Alle gespeicherten Daten löschen und mit Demo-Daten überschreiben."""
+        logger.info("Resetting database with demo data")
         demo_data = self._load_demo_data()
 
         async with self.session.begin():
@@ -41,6 +44,7 @@ class DemoService:
             await self.session.flush()
 
             self.session.add_all(Lernzeiten(**record) for record in demo_data["lernzeiten"])
+        logger.info("Database reset with demo data")
 
     @staticmethod
     def _load_demo_data() -> dict[str, list[dict[str, Any]]]:

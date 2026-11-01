@@ -28,6 +28,9 @@ Run App
 uvicorn isef01_lernzeit_manager.main:app --reload
 ```
 
+Backend, API, service, persistence, and framework logs are written to
+`logs/backend.log`. The log file is rotated after it reaches 10 MB.
+
 ### Code Architecture & Project Structure
 
 This section describes the code architecture under `src/isef01_lernzeit_manager`

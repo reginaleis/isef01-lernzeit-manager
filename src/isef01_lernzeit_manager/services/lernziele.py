@@ -69,7 +69,7 @@ class LernzieleService:
             "start_date": existing.start_date,
             "end_date": existing.end_date,
             "status": existing.status,
-            "accumulated_study_time_min": existing.accumulated_study_time_min,
+            "accumulated_study_time": existing.accumulated_study_time,
             **update_data.model_dump(mode="json", exclude_unset=True),
         }
         LernzieleCreate.model_validate(merged_data)

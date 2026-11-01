@@ -93,7 +93,7 @@ erDiagram
         TEXT module_id FK
         TEXT start_date
         TEXT end_date
-        INTEGER accumulated_study_time_min
+        INTEGER accumulated_study_time
         TEXT status
     }
 
@@ -104,7 +104,7 @@ erDiagram
         INTEGER lernziel_id FK
         TEXT start_date
         TEXT end_date
-        INTEGER accumulated_study_time_min
+        INTEGER accumulated_study_time
         TEXT status
     }
 

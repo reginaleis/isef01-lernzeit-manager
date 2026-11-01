@@ -17,7 +17,7 @@ from .api import (
     timer_router,
 )
 from .logging_config import configure_logging
-from .persistence.database import Base, engine, migrate_database
+from .persistence.database import Base, engine
 
 configure_logging()
 logger = logging.getLogger(__name__)
@@ -27,7 +27,6 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("Starting backend application")
     async with engine.begin() as conn:
-        await conn.run_sync(migrate_database)
         await conn.run_sync(Base.metadata.create_all)
     logger.info("Database tables initialized")
     yield

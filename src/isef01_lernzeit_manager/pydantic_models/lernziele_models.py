@@ -20,7 +20,7 @@ class LernzieleCreate(BaseModel):
     start_date: UTCDate = None
     end_date: UTCDate = None
     status: LernzielStatus = "not_started"
-    accumulated_study_time_min: int = Field(default=0, ge=0)
+    accumulated_study_time: int = Field(default=0, ge=0)
 
     model_config = ConfigDict(extra="forbid")
 
@@ -41,7 +41,7 @@ class LernzieleResponse(BaseModel):
     start_date: UTCDate = None
     end_date: UTCDate = None
     status: LernzielStatus
-    accumulated_study_time_min: int = Field(ge=0)
+    accumulated_study_time: int = Field(ge=0)
 
     model_config = ConfigDict(from_attributes=True, extra="forbid")
 
@@ -60,7 +60,7 @@ class LernzieleUpdate(BaseModel):
     start_date: UTCDate = None
     end_date: UTCDate = None
     status: LernzielStatus | None = None
-    accumulated_study_time_min: int | None = Field(default=None, ge=0)
+    accumulated_study_time: int | None = Field(default=None, ge=0)
 
     model_config = ConfigDict(extra="forbid")
 

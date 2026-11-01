@@ -38,10 +38,10 @@ Create Table if not exists lernziele (
     start_date text,
     end_date text,
 
-    accumulated_study_time_min integer not NULL DEFAULT 0
+    accumulated_study_time integer not NULL DEFAULT 0
         check(
-            typeof(accumulated_study_time_min) = 'integer'
-            AND accumulated_study_time_min >= 0
+            typeof(accumulated_study_time) = 'integer'
+            AND accumulated_study_time >= 0
         ),
 
     status text not NULL DEFAULT 'not_started'
@@ -72,10 +72,10 @@ Create table if not exists zwischenziele (
     lernziel_id integer not NULL,
         start_date text,
         end_date text,
-        accumulated_study_time_min integer not NULL DEFAULT 0
+        accumulated_study_time integer not NULL DEFAULT 0
         check (
-            typeof(accumulated_study_time_min) = 'integer'
-            AND accumulated_study_time_min >= 0
+            typeof(accumulated_study_time) = 'integer'
+            AND accumulated_study_time >= 0
         ),
     status text not NULL DEFAULT 'not_started'
         check (status IN('not_started', 'in_progress','completed', 'overdue')),

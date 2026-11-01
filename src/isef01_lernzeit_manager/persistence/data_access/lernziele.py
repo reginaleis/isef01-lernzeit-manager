@@ -3,7 +3,7 @@
 import logging
 from collections.abc import Mapping
 
-from sqlalchemy import delete, select, update
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from isef01_lernzeit_manager.persistence.tables import Lernziel
@@ -18,7 +18,7 @@ class LernzieleDAO:
         self.db = db_session
 
     async def create(self, lernziel_data: Mapping[str, object]) -> Lernziel:
-        """Create a new Lernziel in the database."""
+        """Neues Ziel in Datenbank speichern."""
         logger.info("Persisting new Lernziel")
         new_lernziel = Lernziel(**dict(lernziel_data))
         self.db.add(new_lernziel)
@@ -27,31 +27,41 @@ class LernzieleDAO:
         return new_lernziel
 
     async def get_all(self) -> list[Lernziel]:
-        """Retrieve all Lernziele from the database."""
+        """Alle Lernziele aus der Datenbank abrufen."""
         logger.info("Loading all Lernziele")
         stmt = select(Lernziel)
         result = await self.db.scalars(stmt)
         return list(result.all())
 
+    async def update(self, lernziel_id: int, lernziel_data: Mapping[str, object]) -> Lernziel | None:
+        """Vorhandenes Lernziel in der Datenbank aktualisieren."""
+        lernziel = await self.get_by_id(lernziel_id)
+        if lernziel is None:
+            return None
+        for field, value in lernziel_data.items():
+            setattr(lernziel, field, value)
+        await self.db.commit()
+        await self.db.refresh(lernziel)
+        return lernziel
+
+    async def delete(self, lernziel_id: int) -> Lernziel | None:
+        """Lernziel aus der Datenbank löschen."""
+        lernziel = await self.get_by_id(lernziel_id)
+        if lernziel is None:
+            return None
+        await self.db.delete(lernziel)
+        await self.db.commit()
+        return lernziel
+
     async def get_by_id(self, lernziel_id: int) -> Lernziel | None:
-        """Retrieve a Lernziel by its ID."""
+        """Lernziel anhand der ID abrufen."""
         stmt = select(Lernziel).where(Lernziel.id == lernziel_id)
         result = await self.db.scalars(stmt)
         return result.one_or_none()
 
-    async def update(self, lernziel_id: int, lernziel_data: dict) -> None:
-        """Update an existing Lernziel in the database."""
-        stmt = (
-            update(Lernziel)
-            .where(Lernziel.id == lernziel_id)
-            .values(**lernziel_data)
-            .execution_options(synchronize_session="fetch")
-        )
-        await self.db.execute(stmt)
-        await self.db.commit()
-
-    async def delete(self, lernziel_id: int) -> None:
-        """Delete a Lernziel by ID from the database."""
-        stmt = delete(Lernziel).where(Lernziel.id == lernziel_id)
-        await self.db.execute(stmt)
-        await self.db.commit()
+    async def get_lernziele_in_range(self, from_date: str, to_date: str) -> list[Lernziel]:
+        """Lernziele in einem bestimmten Datumsbereich abrufen."""
+        logger.info(f"Fetching Lernziele where start_date is between {from_date} and {to_date}")
+        stmt = select(Lernziel).where(Lernziel.start_date >= from_date, Lernziel.start_date <= to_date)
+        result = await self.db.scalars(stmt)
+        return list(result.all())

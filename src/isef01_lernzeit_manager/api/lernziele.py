@@ -2,7 +2,7 @@
 API routes Lernziele.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Path, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from isef01_lernzeit_manager.persistence.database import get_session
@@ -43,22 +43,50 @@ async def get_all_lernziele(
     return [LernzieleResponse.model_validate(lernziel) for lernziel in lernziele]
 
 
+@router.get("/next-six-months", response_model=list[LernzieleResponse])
+async def get_lernziele_next_6_months(
+    service: LernzieleService = Depends(get_lernziele_service),
+) -> list[LernzieleResponse]:
+    """Lernziele der nächsten 6 Monate abrufen."""
+    lernziele = await service.get_lernziele_next_6_months()
+    return [LernzieleResponse.model_validate(lernziel) for lernziel in lernziele]
+
+
 @router.get("/{lernziel_id}", response_model=LernzieleResponse)
-async def get_lernziel(lernziel_id: int) -> dict:
+async def get_lernziel(
+    lernziel_id: int = Path(ge=1),
+    service: LernzieleService = Depends(get_lernziele_service),
+) -> LernzieleResponse:
     """Lernziel nach ID abrufen."""
-    raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED)
+    lernziel = await service.get_lernziel_by_id(lernziel_id)
+    if lernziel is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lernziel not found")
+    return LernzieleResponse.model_validate(lernziel)
 
 
 @router.put("/{lernziel_id}", response_model=LernzieleResponse)
-async def update_lernziel(lernziel_id: int, update: LernzieleUpdate) -> dict:
+async def update_lernziel(
+    update: LernzieleUpdate,
+    lernziel_id: int = Path(ge=1),
+    service: LernzieleService = Depends(get_lernziele_service),
+) -> LernzieleResponse:
     """Lernziel aktualisieren."""
-    raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED)
+    lernziel = await service.update_lernziel(lernziel_id, update)
+    if lernziel is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lernziel not found")
+    return LernzieleResponse.model_validate(lernziel)
 
 
 @router.delete("/{lernziel_id}", response_model=LernzieleResponse)
-async def delete_lernziel(lernziel_id: int) -> dict:
+async def delete_lernziel(
+    lernziel_id: int = Path(ge=1),
+    service: LernzieleService = Depends(get_lernziele_service),
+) -> LernzieleResponse:
     """Lernziel löschen."""
-    raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED)
+    lernziel = await service.delete_lernziel(lernziel_id)
+    if lernziel is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lernziel not found")
+    return LernzieleResponse.model_validate(lernziel)
 
 
 @router.get("/{lernziel_id}/zwischenziele", response_model=list[ZwischenzielResponse])

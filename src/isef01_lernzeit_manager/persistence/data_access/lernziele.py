@@ -4,10 +4,10 @@ import logging
 from collections.abc import Mapping
 from datetime import date
 
-from sqlalchemy import select
+from sqlalchemy import exists, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from isef01_lernzeit_manager.persistence.tables import Lernziel
+from isef01_lernzeit_manager.persistence.tables import Lernzeiten, Lernziel, Zwischenziel
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +53,15 @@ class LernzieleDAO:
         await self.db.delete(lernziel)
         await self.db.commit()
         return lernziel
+
+    async def has_dependents(self, lernziel_id: int) -> bool:
+        """Check whether a Lernziel is referenced by child records."""
+        stmt = select(
+            exists().where(Zwischenziel.lernziel_id == lernziel_id),
+            exists().where(Lernzeiten.lernziel_id == lernziel_id),
+        )
+        has_zwischenziele, has_lernzeiten = (await self.db.execute(stmt)).one()
+        return has_zwischenziele or has_lernzeiten
 
     async def get_by_id(self, lernziel_id: int) -> Lernziel | None:
         """Lernziel anhand der ID abrufen."""

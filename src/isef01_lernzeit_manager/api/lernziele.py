@@ -13,6 +13,7 @@ from isef01_lernzeit_manager.pydantic_models import (
     ZwischenzielResponse,
 )
 from isef01_lernzeit_manager.services import LernzieleService
+from isef01_lernzeit_manager.services.lernziele import LernzielHasDependentsError
 
 router = APIRouter(prefix="/api/lernziele", tags=["lernziele"])
 
@@ -83,7 +84,13 @@ async def delete_lernziel(
     service: LernzieleService = Depends(get_lernziele_service),
 ) -> LernzieleResponse:
     """Lernziel löschen."""
-    lernziel = await service.delete_lernziel(lernziel_id)
+    try:
+        lernziel = await service.delete_lernziel(lernziel_id)
+    except LernzielHasDependentsError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Lernziel cannot be deleted while Zwischenziele or Lernzeiten exist",
+        ) from None
     if lernziel is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lernziel not found")
     return LernzieleResponse.model_validate(lernziel)

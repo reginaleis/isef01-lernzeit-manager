@@ -5,6 +5,7 @@ from calendar import monthrange
 from collections.abc import Mapping
 from datetime import UTC, date, datetime
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from isef01_lernzeit_manager.persistence.data_access import LernzieleDAO
@@ -12,6 +13,10 @@ from isef01_lernzeit_manager.persistence.tables import Lernziel
 from isef01_lernzeit_manager.pydantic_models import LernzieleCreate, LernzieleUpdate
 
 logger = logging.getLogger(__name__)
+
+
+class LernzielHasDependentsError(Exception):
+    """Raised when a Lernziel cannot be deleted because children reference it."""
 
 
 def add_calendar_months(value: date, months: int) -> date:
@@ -73,7 +78,13 @@ class LernzieleService:
     async def delete_lernziel(self, lernziel_id: int) -> Lernziel | None:
         """Delete a Lernziel by its ID."""
         logger.info(f"Deleting Lernziel with ID: {lernziel_id}")
-        return await self.dao.delete(lernziel_id)
+        if await self.dao.has_dependents(lernziel_id):
+            raise LernzielHasDependentsError(lernziel_id)
+        try:
+            return await self.dao.delete(lernziel_id)
+        except IntegrityError as error:
+            await self.dao.db.rollback()
+            raise LernzielHasDependentsError(lernziel_id) from error
 
     async def get_lernziele_next_6_months(self) -> list[Lernziel]:
         """Retrieve Lernziele for the next 6 months."""

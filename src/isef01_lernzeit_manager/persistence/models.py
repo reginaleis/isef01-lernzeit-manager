@@ -78,7 +78,7 @@ class Zwischenziel(Base):
     lernziel_id: Mapped[int] = mapped_column(ForeignKey("lernziele.id"), nullable=False)
     start_date: Mapped[str | None] = mapped_column(nullable=True)
     end_date: Mapped[str | None] = mapped_column(nullable=True)
-    accumulated_study_time: Mapped[int] = mapped_column(default=0)
+    accumulated_study_time_min: Mapped[int] = mapped_column(default=0)
     tracked_lernzeiten: Mapped[list[Lernzeiten]] = relationship(
         back_populates="zwischenziel",
         overlaps="lernziel",
@@ -106,7 +106,7 @@ class Lernziel(Base):
     module_id: Mapped[str] = mapped_column(ForeignKey("module.id"), nullable=False)
     start_date: Mapped[str | None] = mapped_column(nullable=True)
     end_date: Mapped[str | None] = mapped_column(nullable=True)
-    accumulated_study_time: Mapped[int] = mapped_column(default=0)
+    accumulated_study_time_min: Mapped[int] = mapped_column(default=0)
     tracked_lernzeiten: Mapped[list[Lernzeiten]] = relationship(
         back_populates="lernziel",
         overlaps="tracked_lernzeiten,zwischenziel",

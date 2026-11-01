@@ -15,6 +15,6 @@ class ZwischenzielResponse(BaseModel):
     description: str | None = None
     lernziel_id: int = Field(ge=0)
     start_date: datetime | None = None
-    accumulated_study_time: int = Field(ge=0)
+    accumulated_study_time_min: int = Field(ge=0)
 
     model_config = ConfigDict(from_attributes=True)

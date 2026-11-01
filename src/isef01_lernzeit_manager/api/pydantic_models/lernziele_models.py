@@ -17,7 +17,7 @@ class LernzieleCreate(BaseModel):
     start_date: datetime | None = None
     end_date: datetime | None = None
     status: Literal["not_started", "in_progress", "completed", "overdue"] = "not_started"
-    accumulated_study_time: int = Field(default=0, ge=0)
+    accumulated_study_time_min: int = Field(default=0, ge=0)
 
 
 class LernzieleResponse(BaseModel):
@@ -30,7 +30,7 @@ class LernzieleResponse(BaseModel):
     start_date: datetime | None = None
     end_date: datetime | None = None
     status: str
-    accumulated_study_time: int = Field(ge=0)
+    accumulated_study_time_min: int = Field(ge=0)
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -43,6 +43,6 @@ class LernzieleUpdate(BaseModel):
     start_date: datetime | None = None
     end_date: datetime | None = None
     status: str | None = None
-    accumulated_study_time: int | None = Field(ge=0)
+    accumulated_study_time_min: int | None = Field(ge=0)
 
     model_config = ConfigDict(from_attributes=True)

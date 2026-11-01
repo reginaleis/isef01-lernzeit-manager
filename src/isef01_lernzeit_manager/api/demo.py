@@ -20,5 +20,7 @@ def get_demo_service(
 async def reset_data(
     service: DemoService = Depends(get_demo_service),
 ) -> None:
-    """Restore the predefined demo data."""
+    """Demo Daten wiederherstellen.
+    Dieser Endpunkt löscht alle gespeicherten Daten und stellt vordefinierte Demo-Daten wieder her.
+    """
     await service.reset_data()

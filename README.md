@@ -116,11 +116,6 @@ erDiagram
         INTEGER duration
     }
 ```
-The SQL and SQLAlchemy definitions are compared in CI with:
-
-```bash
-uv run python scripts/check_schema.py
-```
 
 
 ### Tests

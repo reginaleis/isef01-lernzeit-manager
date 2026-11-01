@@ -24,7 +24,7 @@ def configure_logging() -> None:
                 "backend_file": {
                     "class": "logging.handlers.RotatingFileHandler",
                     "filename": str(LOG_FILE.resolve()),
-                    "maxBytes": 10_000_000,
+                    "maxBytes": 1_000_000,
                     "backupCount": 5,
                     "encoding": "utf-8",
                     "formatter": "backend",

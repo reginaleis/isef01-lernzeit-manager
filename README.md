@@ -73,24 +73,15 @@ The database design is defined in [`datenbank_entwurf.sql`](docs/database/datenb
 
 ```mermaid
 erDiagram
-    module ||--o{ lernziele : "contains"
     lernziele ||--o{ zwischenziele : "contains"
     lernziele ||--o{ lernzeiten : "records"
     zwischenziele o|--o{ lernzeiten : "optionally records"
-
-    module {
-        TEXT id PK
-        TEXT title
-        REAL ects
-        TEXT exam_type
-        TEXT completed_on
-    }
 
     lernziele {
         INTEGER id PK
         TEXT title
         TEXT description
-        TEXT module_id FK
+        TEXT module_id
         TEXT start_date
         TEXT end_date
         INTEGER accumulated_study_time

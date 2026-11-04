@@ -29,7 +29,7 @@ uvicorn isef01_lernzeit_manager.main:app --reload
 ```
 
 Backend, API, service, persistence, and framework logs are written to
-`logs/backend.log`. The log file is rotated after it reaches 1 MB.
+standard output.
 
 ### Code Architecture & Project Structure
 

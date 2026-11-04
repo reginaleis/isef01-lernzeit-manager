@@ -1,18 +1,4 @@
 {
-  "modules": [
-    {
-      "id": "ISEF01",
-      "title": "Software Engineering Fundamentals",
-      "ects": 5.0,
-      "exam_type": "Projektarbeit"
-    },
-    {
-      "id": "DBS01",
-      "title": "Database Systems",
-      "ects": 5.0,
-      "exam_type": "Klausur"
-    }
-  ],
   "lernziele": [
     {
       "id": 1,

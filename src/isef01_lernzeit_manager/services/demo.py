@@ -8,7 +8,7 @@ from typing import Any, cast
 from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from isef01_lernzeit_manager.persistence.tables import Lernzeiten, Lernziel, Module, Zwischenziel
+from isef01_lernzeit_manager.persistence.tables import Lernzeiten, Lernziel, Zwischenziel
 
 DEMO_DATA_FILE = Path(__file__).parent.parent / "persistence" / "demo_data.json"
 logger = logging.getLogger(__name__)
@@ -29,11 +29,6 @@ class DemoService:
             await self.session.execute(delete(Lernzeiten))
             await self.session.execute(delete(Zwischenziel))
             await self.session.execute(delete(Lernziel))
-            await self.session.execute(delete(Module))
-
-            modules = [Module(**record) for record in demo_data["modules"]]
-            self.session.add_all(modules)
-            await self.session.flush()
 
             lernziele = [Lernziel(**record) for record in demo_data["lernziele"]]
             self.session.add_all(lernziele)

@@ -3,7 +3,6 @@
 from enum import Enum
 
 from sqlalchemy import (
-    REAL,
     ForeignKey,
     ForeignKeyConstraint,
     Index,
@@ -21,22 +20,6 @@ class Status(Enum):
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
     OVERDUE = "overdue"
-
-
-class Module(Base):
-    """Database model for Module."""
-
-    __tablename__ = "module"
-
-    id: Mapped[str] = mapped_column(primary_key=True)
-    title: Mapped[str] = mapped_column(nullable=False)
-    ects: Mapped[float] = mapped_column(REAL, nullable=False)
-    exam_type: Mapped[str] = mapped_column(nullable=True)
-    completed_on: Mapped[str | None] = mapped_column(nullable=True)
-    lernziele: Mapped[list["Lernziel"]] = relationship(
-        back_populates="module",
-        cascade="all, delete-orphan",
-    )
 
 
 class Lernzeiten(Base):
@@ -100,10 +83,9 @@ class Lernziel(Base):
     __tablename__ = "lernziele"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    module: Mapped["Module"] = relationship(back_populates="lernziele")
     title: Mapped[str] = mapped_column(nullable=False)
     description: Mapped[str | None] = mapped_column(nullable=True)
-    module_id: Mapped[str] = mapped_column(ForeignKey("module.id"), nullable=False)
+    module_id: Mapped[str] = mapped_column(nullable=False)
     start_date: Mapped[str | None] = mapped_column(nullable=True)
     end_date: Mapped[str | None] = mapped_column(nullable=True)
     accumulated_study_time: Mapped[int] = mapped_column(default=0)

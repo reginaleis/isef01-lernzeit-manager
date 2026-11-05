@@ -45,7 +45,7 @@ Create table if not exists zwischenziel (
     title text not NULL 
         check (length(trim(title))>0),
     description text,
-    modul_id text integer not NULL,
+    modul_id text not NULL,
     start_date text,
     end_date text,
     end_time text,
@@ -86,6 +86,7 @@ Create table if not exists geplante_lernzeit (
     id integer primary key,
     modul_id text not NULL,
     zwischenziel_id integer,
+    starts_at text NOT NULL,
     duration integer NOT NULL
         check (typeof(duration) = 'integer' AND duration > 0),
     status text NOT NULL DEFAULT 'planned'
@@ -100,7 +101,7 @@ Create table if not EXISTS lernzeit (
     modul_id text NOT NULL,
     zwischenziel_id integer,
     date text NOT NULL,
-    duration REAL not NULL,
+    duration REAL not NULL
         check (typeof(duration) in ('integer','real') AND duration > 0),
     geplante_lernzeit_id integer,
 foreign key (geplante_lernzeit_id)

@@ -1,14 +1,19 @@
 import logging
-from collections.abc import AsyncGenerator, Awaitable, Callable
+import sqlite3
+from collections.abc import AsyncGenerator, Callable
 from contextlib import asynccontextmanager
 from pathlib import Path
-from time import perf_counter
+from typing import Any
 
-from fastapi import FastAPI, Request, Response
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, Request, Response, status
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from .api import (
+from .logging_config import configure_logging
+
+configure_logging()
+
+from .api import (  # noqa: E402
     demo_router,
     goals_router,
     milestones_router,
@@ -16,22 +21,20 @@ from .api import (
     sessions_router,
     timer_router,
 )
-from .logging_config import configure_logging
-from .persistence.database import Base, engine
+from .persistence.database import Base, engine  # noqa: E402
 
-configure_logging()
 logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    logger.info("Starting backend application")
+    logger.debug("Starting backend application")
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    logger.info("Database tables initialized")
+    logger.debug("Database tables initialized")
     yield
     await engine.dispose()
-    logger.info("Stopped backend application")
+    logger.debug("Stopped backend application")
 
 
 app = FastAPI(lifespan=lifespan, title="ISEF01 Lernzeit Manager", version="0.1.0")
@@ -41,27 +44,52 @@ STATIC_DIR = PACKAGE_DIR / "static"
 
 
 @app.middleware("http")
-async def log_requests(
-    request: Request,
-    call_next: Callable[[Request], Awaitable[Response]],
-) -> Response:
-    """Log every HTTP request handled by the backend."""
-    started_at = perf_counter()
+async def log_requests(request: Request, call_next: Callable) -> JSONResponse | Any:
+    path = request.url.path
+
     try:
         response = await call_next(request)
-    except Exception:
-        logger.exception("%s %s failed", request.method, request.url.path)
+
+    except Exception as e:
+        logger.error("Request failed", extra={"extra_data": {"path": path, "error": str(e)}})
         raise
 
-    duration = perf_counter() - started_at
-    logger.info(
-        "%s %s -> %s (%.3fs)",
-        request.method,
-        request.url.path,
-        response.status_code,
-        duration,
-    )
+    if response.status_code >= 400:
+        # 1. Read the response body
+        response_body = b""
+        async for chunk in response.body_iterator:
+            response_body += chunk
+
+        # 2. Log the body
+        logger.warning(
+            "Request failed",
+            extra={
+                "extra_data": {
+                    "path": path,
+                    "status": response.status_code,
+                    "response_body": response_body.decode(errors="replace"),
+                }
+            },
+        )
+
+        # 3. IMPORTANT: Reconstruct the response because the iterator is now empty
+        return Response(
+            content=response_body,
+            status_code=response.status_code,
+            headers=dict(response.headers),
+            media_type=response.media_type,
+        )
+
     return response
+
+
+@app.exception_handler(sqlite3.Error)
+async def db_exception_handler(request: Request, exc: sqlite3.Error) -> JSONResponse:
+    logger.error(f"DB Error: {exc}")
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={"message": "A database error occurred."},
+    )
 
 
 # --------------

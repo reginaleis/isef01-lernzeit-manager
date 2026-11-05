@@ -34,7 +34,7 @@ class LernzieleService:
 
     async def get_all_lernziele(self) -> list[Lernziel]:
         """Alle Lernziele abrufen."""
-        logger.info("Fetching all Lernziele")
+        logger.debug("Fetching all Lernziele")
         return await self.dao.get_all()
 
     async def create_lernziel(
@@ -42,13 +42,13 @@ class LernzieleService:
         lernziel_data: LernzieleCreate | Mapping[str, object],
     ) -> Lernziel:
         """Validate and persist a new Lernziel."""
-        logger.info("Creating Lernziel")
+        logger.debug("Creating Lernziel")
         lernziel = LernzieleCreate.model_validate(lernziel_data)
         return await self.dao.create(lernziel.model_dump(mode="json"))
 
     async def get_lernziel_by_id(self, lernziel_id: int) -> Lernziel | None:
         """Retrieve a Lernziel by its ID."""
-        logger.info(f"Fetching Lernziel with ID: {lernziel_id}")
+        logger.debug(f"Fetching Lernziel with ID: {lernziel_id}")
         return await self.dao.get_by_id(lernziel_id)
 
     async def update_lernziel(
@@ -57,7 +57,7 @@ class LernzieleService:
         lernziel_data: LernzieleUpdate | Mapping[str, object],
     ) -> Lernziel | None:
         """Validate and update an existing Lernziel."""
-        logger.info(f"Updating Lernziel with ID: {lernziel_id}")
+        logger.debug(f"Updating Lernziel with ID: {lernziel_id}")
         existing = await self.dao.get_by_id(lernziel_id)
         if existing is None:
             return None
@@ -77,7 +77,7 @@ class LernzieleService:
 
     async def delete_lernziel(self, lernziel_id: int) -> Lernziel | None:
         """Delete a Lernziel by its ID."""
-        logger.info(f"Deleting Lernziel with ID: {lernziel_id}")
+        logger.debug(f"Deleting Lernziel with ID: {lernziel_id}")
         if await self.dao.has_dependents(lernziel_id):
             raise LernzielHasDependentsError(lernziel_id)
         try:
@@ -88,7 +88,7 @@ class LernzieleService:
 
     async def get_lernziele_next_6_months(self) -> list[Lernziel]:
         """Retrieve Lernziele for the next 6 months."""
-        logger.info("Fetching Lernziele for the next 6 months")
+        logger.debug("Fetching Lernziele for the next 6 months")
         today = datetime.now(UTC).date()
         six_months_later = add_calendar_months(today, 6)
         return await self.dao.get_lernziele_in_range(from_date=today, to_date=six_months_later)

@@ -20,7 +20,7 @@ class LernzieleDAO:
 
     async def create(self, lernziel_data: Mapping[str, object]) -> Lernziel:
         """Neues Ziel in Datenbank speichern."""
-        logger.info("Persisting new Lernziel")
+        logger.debug("Persisting new Lernziel")
         new_lernziel = Lernziel(**dict(lernziel_data))
         self.db.add(new_lernziel)
         await self.db.commit()
@@ -29,7 +29,7 @@ class LernzieleDAO:
 
     async def get_all(self) -> list[Lernziel]:
         """Alle Lernziele aus der Datenbank abrufen."""
-        logger.info("Loading all Lernziele")
+        logger.debug("Loading all Lernziele")
         stmt = select(Lernziel)
         result = await self.db.scalars(stmt)
         return list(result.all())
@@ -73,7 +73,7 @@ class LernzieleDAO:
         """Lernziele in einem bestimmten Datumsbereich abrufen."""
         from_date_value = from_date.isoformat()
         to_date_value = to_date.isoformat()
-        logger.info(f"Fetching Lernziele where start_date is between {from_date_value} and {to_date_value}")
+        logger.debug(f"Fetching Lernziele where start_date is between {from_date_value} and {to_date_value}")
         stmt = select(Lernziel).where(
             Lernziel.start_date >= from_date_value,
             Lernziel.start_date <= to_date_value,

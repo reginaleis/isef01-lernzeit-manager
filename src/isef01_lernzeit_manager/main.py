@@ -1,4 +1,5 @@
 import logging
+import os
 import sqlite3
 from collections.abc import AsyncGenerator, Callable
 from contextlib import asynccontextmanager
@@ -8,6 +9,8 @@ from typing import Any
 from fastapi import FastAPI, Request, Response, status
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+
+from isef01_lernzeit_manager.persistence.database import DATABASE_URL
 
 from .logging_config import configure_logging
 
@@ -29,9 +32,16 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.debug("Starting backend application")
+    if os.getenv("RESET_DB", "false") == "true":
+        logger.debug("Delete Database File")
+        if os.path.exists(DATABASE_URL):
+            os.remove(DATABASE_URL)
+
+    logger.debug("Init Database")
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     logger.debug("Database tables initialized")
+
     yield
     await engine.dispose()
     logger.debug("Stopped backend application")

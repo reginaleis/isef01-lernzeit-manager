@@ -2,7 +2,9 @@
 API routes Lernziele.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Path, status
+from datetime import date
+
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 
 from isef01_lernzeit_manager.exceptions import LernzielHasDependentsError, LernzielNotFoundError
 from isef01_lernzeit_manager.pydantic_models import (
@@ -32,9 +34,17 @@ async def new_lernziel(
 @router.get("/", response_model=list[LernzieleResponse])
 async def get_all_lernziele(
     service: LernzieleService = Depends(get_lernziele_service),
+    from_date: date | None = Query(None, description="Format: YYYY-MM-DD"),
+    to_date: date | None = Query(None, description="Format: YYYY-MM-DD"),
 ) -> list[LernzieleResponse]:
     """Alle Lernziele abrufen."""
-    lernziele = await service.get_all_lernziele()
+    if from_date or to_date:
+        try:
+            lernziele = await service.get_lernziele_in_range(from_date, to_date)
+        except ValueError as error:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error)) from error
+    else:
+        lernziele = await service.get_all_lernziele()
     return [LernzieleResponse.model_validate(lernziel) for lernziel in lernziele]
 
 

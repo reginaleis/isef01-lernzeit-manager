@@ -84,7 +84,47 @@
       "id": 5,
       "title": "MS 4: Softwaresystem und Dokumentation bereitgestellt",
       "description": null,
-      "lernziel_id": 2,
+      "lernziel_id": 1,
+      "start_date": "2026-11-10",
+      "end_date": "2026-11-25",
+      "accumulated_study_time": 0,
+      "status": "not_started"
+    },
+    {
+      "id": 4,
+      "title": "MS 3: Konfiguration der Softwareentwicklung und Qualitätsplanung der Liefergegenstände bereitgestellt",
+      "description": null,
+      "lernziel_id": 1,
+      "start_date": "2026-11-10",
+      "end_date": "2026-11-25",
+      "accumulated_study_time": 0,
+      "status": "not_started"
+    },
+    {
+      "id": 5,
+      "title": "MS 4: Softwaresystem und Dokumentation bereitgestellt",
+      "description": null,
+      "lernziel_id": 1,
+      "start_date": "2026-11-10",
+      "end_date": "2026-11-25",
+      "accumulated_study_time": 0,
+      "status": "not_started"
+    },
+    {
+      "id": 6,
+      "title": "MS 5: Ergebnispräsentation als Video bereitgestellt",
+      "description": null,
+      "lernziel_id": 1,
+      "start_date": "2026-11-10",
+      "end_date": "2026-11-25",
+      "accumulated_study_time": 0,
+      "status": "not_started"
+    },
+    {
+      "id": 7,
+      "title": "MS 6: Projektbericht bereitgestellt",
+      "description": null,
+      "lernziel_id": 1,
       "start_date": "2026-11-10",
       "end_date": "2026-11-25",
       "accumulated_study_time": 0,

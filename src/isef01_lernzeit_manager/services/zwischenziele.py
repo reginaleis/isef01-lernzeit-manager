@@ -2,6 +2,7 @@
 
 import logging
 from collections.abc import Mapping
+from datetime import date
 
 from fastapi import Depends
 from sqlalchemy.exc import IntegrityError
@@ -90,11 +91,22 @@ class ZwischenzieleService:
             raise ZwischenzielNotFoundError(zwischenziel_id)
         return deleted
 
-    async def get_zwischenziele_by_lernziel_id(self, lernziel_id: int) -> list[Zwischenziel]:
-        """Retrieve all Zwischenziele associated with a specific Lernziel ID."""
-        logger.debug(f"Fetching Zwischenziele for Lernziel ID: {lernziel_id}")
-        await self.dao.ensure_lernziel_exists(lernziel_id)
-        return await self.dao.get_by_lernziel_id(lernziel_id)
+    async def get_filtered_zwischenziele(
+        self,
+        lernziel_id: int | None = None,
+        from_date: date | None = None,
+        to_date: date | None = None,
+    ) -> list[Zwischenziel]:
+        """Zwischenziele auslesen."""
+        logger.debug(
+            f"Fetching Zwischenziele with filters - Lernziel ID: {lernziel_id}, "
+            f"From Date: {from_date}, To Date: {to_date}"
+        )
+        if from_date and to_date and from_date > to_date:
+            raise ValueError("from_date cannot be later than to_date.")
+        if lernziel_id:
+            await self.dao.ensure_lernziel_exists(lernziel_id)
+        return await self.dao.get_filtered_zwischenziele(lernziel_id, from_date, to_date)
 
 
 def get_zwischenziele_service(

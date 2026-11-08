@@ -86,8 +86,11 @@ class Lernziel(Base):
     title: Mapped[str] = mapped_column(nullable=False)
     description: Mapped[str | None] = mapped_column(nullable=True)
     module_id: Mapped[str] = mapped_column(nullable=False)
+    exam_type: Mapped[str | None] = mapped_column(nullable=True)
+    ects: Mapped[int | None] = mapped_column(nullable=True)
     start_date: Mapped[str | None] = mapped_column(nullable=True)
     end_date: Mapped[str | None] = mapped_column(nullable=True)
+    completed_on: Mapped[str | None] = mapped_column(nullable=True)
     accumulated_study_time: Mapped[int] = mapped_column(default=0)
     tracked_lernzeiten: Mapped[list[Lernzeiten]] = relationship(
         back_populates="lernziel",

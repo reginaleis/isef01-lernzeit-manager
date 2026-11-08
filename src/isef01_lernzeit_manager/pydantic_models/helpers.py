@@ -4,6 +4,7 @@ from typing import Annotated, Literal
 from pydantic import BeforeValidator
 
 Status = Literal["not_started", "in_progress", "completed", "overdue"]
+ExamType = Literal["Klausur", "Hausarbeit", "Projektarbeit", "Seminararbeit", "Fallstudie", "Workbook", "Thesis"]
 
 
 def normalize_to_utc_date(value: object) -> date | object | None:

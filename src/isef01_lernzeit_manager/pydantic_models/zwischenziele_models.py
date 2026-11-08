@@ -4,7 +4,7 @@ Pydantic models für die Validierung von API responses für Zwischenziele.
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from isef01_lernzeit_manager.pydantic_models.helpers import Status, UTCDate
+from isef01_lernzeit_manager.pydantic_models.helpers import Status, UTCDate, check_dates_start_before_end
 
 
 class ZwischenzielBase(BaseModel):
@@ -23,8 +23,7 @@ class ZwischenzielBase(BaseModel):
     @model_validator(mode="after")
     def validate_date_range(self) -> "ZwischenzielBase":
         """Ensure a Zwischenziel does not end before it starts."""
-        if self.start_date and self.end_date and self.start_date > self.end_date:
-            raise ValueError("start_date must be before or equal to end_date")
+        check_dates_start_before_end(self.start_date, self.end_date)
         return self
 
 

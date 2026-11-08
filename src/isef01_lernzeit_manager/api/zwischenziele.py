@@ -2,7 +2,9 @@
 API routes Zwischenziele.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Path, status
+from datetime import date
+
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 
 from isef01_lernzeit_manager.exceptions import (
     LernzielNotFoundError,
@@ -34,9 +36,17 @@ async def new_zwischenziel(
 @router.get("/", response_model=list[ZwischenzielResponse])
 async def get_all_zwischenziele(
     service: ZwischenzieleService = Depends(get_zwischenziele_service),
+    lernziel_id: int | None = Query(default=None, ge=1, description="Filter nach Lernziel-ID"),
+    from_date: date | None = Query(None, description="Format: YYYY-MM-DD"),
+    to_date: date | None = Query(None, description="Format: YYYY-MM-DD"),
 ) -> list[ZwischenzielResponse]:
     """Alle Zwischenziele abrufen."""
-    zwischenziele = await service.get_all_zwischenziele()
+    try:
+        zwischenziele = await service.get_filtered_zwischenziele(lernziel_id, from_date, to_date)
+    except ValueError as error:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error)) from error
+    except LernzielNotFoundError as error:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from error
     return [ZwischenzielResponse.model_validate(zwischenziel) for zwischenziel in zwischenziele]
 
 

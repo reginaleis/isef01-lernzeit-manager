@@ -98,6 +98,29 @@ class LernzieleService:
         six_months_later = add_calendar_months(today, 6)
         return await self.dao.get_lernziele_in_range(from_date=today, to_date=six_months_later)
 
+    async def get_lernziele_in_range(
+        self,
+        from_date: date | None,
+        to_date: date | None,
+    ) -> list[Lernziel]:
+        """Retrieve Lernziele within a specific date range."""
+        logger.debug(f"Fetching Lernziele from {from_date} to {to_date}")
+        if from_date is None:
+            earliest_start = await self.dao.get_earliest_start_date()
+            if earliest_start is None:
+                raise ValueError("`from_date` ist erforderlich, wenn `to_date` angegeben ist.")
+            from_date = date.fromisoformat(earliest_start)
+        if to_date is None:
+            latest_start = await self.dao.get_latest_start_date()
+            if latest_start is None:
+                raise ValueError("`to_date` ist erforderlich, wenn `from_date` angegeben ist.")
+            to_date = date.fromisoformat(latest_start)
+        if from_date > to_date:
+            raise ValueError(
+                f"Keine valide Range. `from_date` muss vor `to_date` liegen. Erhaltener Input: {from_date} - {to_date}"
+            )
+        return await self.dao.get_lernziele_in_range(from_date=from_date, to_date=to_date)
+
 
 def get_lernziele_service(
     session: AsyncSession = Depends(get_session),

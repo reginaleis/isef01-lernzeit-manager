@@ -69,6 +69,18 @@ class LernzieleDAO:
         result = await self.db.scalars(stmt)
         return result.one_or_none()
 
+    async def get_earliest_start_date(self) -> str | None:
+        """Get the earliest start date of all Lernziele."""
+        stmt = select(Lernziel.start_date).order_by(Lernziel.start_date.asc()).limit(1)
+        result = await self.db.scalars(stmt)
+        return result.one_or_none()
+
+    async def get_latest_start_date(self) -> str | None:
+        """Get the latest start date of all Lernziele."""
+        stmt = select(Lernziel.start_date).order_by(Lernziel.start_date.desc()).limit(1)
+        result = await self.db.scalars(stmt)
+        return result.one_or_none()
+
     async def get_lernziele_in_range(self, from_date: date, to_date: date) -> list[Lernziel]:
         """Lernziele in einem bestimmten Datumsbereich abrufen."""
         from_date_value = from_date.isoformat()

@@ -1,5 +1,7 @@
 """Zwischenziele Data Access Object"""
 
+from datetime import date
+
 from sqlalchemy import exists, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -59,9 +61,26 @@ class ZwischenzieleDAO:
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_by_lernziel_id(self, lernziel_id: int) -> list["Zwischenziel"]:
-        """Alle Zwischenziele für ein bestimmtes Lernziel abrufen."""
-        stmt = select(Zwischenziel).where(Zwischenziel.lernziel_id == lernziel_id)
+    async def get_filtered_zwischenziele(
+        self,
+        lernziel_id: int | None = None,
+        from_date: date | None = None,
+        to_date: date | None = None,
+    ) -> list["Zwischenziel"]:
+        """Retrieve Zwischenziele matching the supplied optional filters."""
+        if from_date and to_date and from_date > to_date:
+            raise ValueError("from_date cannot be later than to_date.")
+        if lernziel_id:
+            await self.ensure_lernziel_exists(lernziel_id)
+
+        stmt = select(Zwischenziel)
+        if lernziel_id:
+            stmt = stmt.where(Zwischenziel.lernziel_id == lernziel_id)
+        if from_date:
+            stmt = stmt.where(Zwischenziel.start_date >= from_date.isoformat())
+        if to_date:
+            stmt = stmt.where(Zwischenziel.start_date <= to_date.isoformat())
+
         result = await self.db.scalars(stmt)
         return list(result.all())
 

@@ -3,7 +3,7 @@
 import logging
 from calendar import monthrange
 from collections.abc import Mapping
-from datetime import UTC, date, datetime
+from datetime import date
 
 from fastapi import Depends
 from sqlalchemy.exc import IntegrityError
@@ -14,6 +14,7 @@ from isef01_lernzeit_manager.persistence.data_access import LernzieleDAO
 from isef01_lernzeit_manager.persistence.database import get_session
 from isef01_lernzeit_manager.persistence.tables import Lernziel
 from isef01_lernzeit_manager.pydantic_models import LernzieleCreate, LernzieleUpdate
+from isef01_lernzeit_manager.pydantic_models.helpers import Status
 
 logger = logging.getLogger(__name__)
 
@@ -30,11 +31,6 @@ def add_calendar_months(value: date, months: int) -> date:
 class LernzieleService:
     def __init__(self, db_session: AsyncSession):
         self.dao = LernzieleDAO(db_session)
-
-    async def get_all_lernziele(self) -> list[Lernziel]:
-        """Alle Lernziele abrufen."""
-        logger.debug("Fetching all Lernziele")
-        return await self.dao.get_all()
 
     async def create_lernziel(
         self,
@@ -91,35 +87,29 @@ class LernzieleService:
             raise LernzielNotFoundError(lernziel_id)
         return lernziel
 
-    async def get_lernziele_next_6_months(self) -> list[Lernziel]:
-        """Retrieve Lernziele for the next 6 months."""
-        logger.debug("Fetching Lernziele for the next 6 months")
-        today = datetime.now(UTC).date()
-        six_months_later = add_calendar_months(today, 6)
-        return await self.dao.get_lernziele_in_range(from_date=today, to_date=six_months_later)
-
-    async def get_lernziele_in_range(
+    async def get_filtered_lernziele(
         self,
-        from_date: date | None,
-        to_date: date | None,
+        module_id: str | None = None,
+        status: Status | None = None,
+        from_date: date | None = None,
+        to_date: date | None = None,
     ) -> list[Lernziel]:
-        """Retrieve Lernziele within a specific date range."""
-        logger.debug(f"Fetching Lernziele from {from_date} to {to_date}")
-        if from_date is None:
-            earliest_start = await self.dao.get_earliest_start_date()
-            if earliest_start is None:
-                raise ValueError("`from_date` ist erforderlich, wenn `to_date` angegeben ist.")
-            from_date = date.fromisoformat(earliest_start)
-        if to_date is None:
-            latest_start = await self.dao.get_latest_start_date()
-            if latest_start is None:
-                raise ValueError("`to_date` ist erforderlich, wenn `from_date` angegeben ist.")
-            to_date = date.fromisoformat(latest_start)
-        if from_date > to_date:
+        """Retrieve Lernziele matching the supplied optional filters."""
+        logger.debug(
+            f"Fetching Lernziele with filters - Module ID: {module_id}, Status: {status}, "
+            f"From Date: {from_date}, To Date: {to_date}"
+        )
+        if from_date is not None and to_date is not None and from_date > to_date:
             raise ValueError(
-                f"Keine valide Range. `from_date` muss vor `to_date` liegen. Erhaltener Input: {from_date} - {to_date}"
+                f"Keine valide Range. `from_date` darf nicht nach `to_date` liegen. "
+                f"Erhaltener Input: {from_date} - {to_date}"
             )
-        return await self.dao.get_lernziele_in_range(from_date=from_date, to_date=to_date)
+        filters: dict[str, object] = {}
+        if module_id is not None:
+            filters["module_id"] = module_id
+        if status is not None:
+            filters["status"] = status
+        return await self.dao.get_filtered_lernziele(filters, from_date=from_date, to_date=to_date)
 
 
 def get_lernziele_service(

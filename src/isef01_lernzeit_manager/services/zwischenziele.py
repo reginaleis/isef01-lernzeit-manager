@@ -16,6 +16,7 @@ from isef01_lernzeit_manager.persistence.data_access import ZwischenzieleDAO
 from isef01_lernzeit_manager.persistence.database import get_session
 from isef01_lernzeit_manager.persistence.tables import Zwischenziel
 from isef01_lernzeit_manager.pydantic_models import ZwischenzielCreate, ZwischenzielUpdate
+from isef01_lernzeit_manager.pydantic_models.helpers import Status
 
 logger = logging.getLogger(__name__)
 
@@ -23,11 +24,6 @@ logger = logging.getLogger(__name__)
 class ZwischenzieleService:
     def __init__(self, db_session: AsyncSession):
         self.dao = ZwischenzieleDAO(db_session)
-
-    async def get_all_zwischenziele(self) -> list[Zwischenziel]:
-        """Alle Zwischenziele abrufen."""
-        logger.debug("Fetching all Zwischenziele")
-        return await self.dao.get_all()
 
     async def create_zwischenziel(
         self,
@@ -94,19 +90,25 @@ class ZwischenzieleService:
     async def get_filtered_zwischenziele(
         self,
         lernziel_id: int | None = None,
+        status: Status | None = None,
         from_date: date | None = None,
         to_date: date | None = None,
     ) -> list[Zwischenziel]:
-        """Zwischenziele auslesen."""
+        """Retrieve Zwischenziele matching the supplied optional filters."""
         logger.debug(
-            f"Fetching Zwischenziele with filters - Lernziel ID: {lernziel_id}, "
+            f"Fetching Zwischenziele with filters - Lernziel ID: {lernziel_id}, Status: {status}, "
             f"From Date: {from_date}, To Date: {to_date}"
         )
-        if from_date and to_date and from_date > to_date:
+        if from_date is not None and to_date is not None and from_date > to_date:
             raise ValueError("from_date cannot be later than to_date.")
-        if lernziel_id:
+        if lernziel_id is not None:
             await self.dao.ensure_lernziel_exists(lernziel_id)
-        return await self.dao.get_filtered_zwischenziele(lernziel_id, from_date, to_date)
+        filters: dict[str, object] = {}
+        if lernziel_id is not None:
+            filters["lernziel_id"] = lernziel_id
+        if status is not None:
+            filters["status"] = status
+        return await self.dao.get_filtered_zwischenziele(filters, from_date=from_date, to_date=to_date)
 
 
 def get_zwischenziele_service(

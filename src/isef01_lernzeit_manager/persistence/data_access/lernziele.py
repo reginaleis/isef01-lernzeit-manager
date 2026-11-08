@@ -69,26 +69,20 @@ class LernzieleDAO:
         result = await self.db.scalars(stmt)
         return result.one_or_none()
 
-    async def get_earliest_start_date(self) -> str | None:
-        """Get the earliest start date of all Lernziele."""
-        stmt = select(Lernziel.start_date).order_by(Lernziel.start_date.asc()).limit(1)
-        result = await self.db.scalars(stmt)
-        return result.one_or_none()
-
-    async def get_latest_start_date(self) -> str | None:
-        """Get the latest start date of all Lernziele."""
-        stmt = select(Lernziel.start_date).order_by(Lernziel.start_date.desc()).limit(1)
-        result = await self.db.scalars(stmt)
-        return result.one_or_none()
-
-    async def get_lernziele_in_range(self, from_date: date, to_date: date) -> list[Lernziel]:
-        """Lernziele in einem bestimmten Datumsbereich abrufen."""
-        from_date_value = from_date.isoformat()
-        to_date_value = to_date.isoformat()
-        logger.debug(f"Fetching Lernziele where start_date is between {from_date_value} and {to_date_value}")
-        stmt = select(Lernziel).where(
-            Lernziel.start_date >= from_date_value,
-            Lernziel.start_date <= to_date_value,
-        )
+    async def get_filtered_lernziele(
+        self,
+        filters: Mapping[str, object],
+        from_date: date | None = None,
+        to_date: date | None = None,
+    ) -> list[Lernziel]:
+        """Retrieve Lernziele matching optional field and start-date filters."""
+        logger.debug(f"Loading filtered Lernziele with filters {filters}, from {from_date} to {to_date}")
+        stmt = select(Lernziel)
+        for field, value in filters.items():
+            stmt = stmt.where(getattr(Lernziel, field) == value)
+        if from_date is not None:
+            stmt = stmt.where(Lernziel.start_date >= from_date.isoformat())
+        if to_date is not None:
+            stmt = stmt.where(Lernziel.start_date <= to_date.isoformat())
         result = await self.db.scalars(stmt)
         return list(result.all())

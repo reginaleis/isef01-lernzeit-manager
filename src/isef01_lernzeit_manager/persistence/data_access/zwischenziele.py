@@ -1,5 +1,6 @@
 """Zwischenziele Data Access Object"""
 
+from collections.abc import Mapping
 from datetime import date
 
 from sqlalchemy import exists, select
@@ -21,12 +22,6 @@ class ZwischenzieleDAO:
         await self.db.commit()
         await self.db.refresh(new_zwischenziel)
         return new_zwischenziel
-
-    async def get_all(self) -> list["Zwischenziel"]:
-        """Alle Zwischenziele aus der Datenbank abrufen."""
-        stmt = select(Zwischenziel)
-        result = await self.db.scalars(stmt)
-        return list(result.all())
 
     async def update(self, zwischenziel_id: int, zwischenziel_data: dict) -> "Zwischenziel" | None:
         """Vorhandenes Zwischenziel in der Datenbank aktualisieren."""
@@ -63,22 +58,17 @@ class ZwischenzieleDAO:
 
     async def get_filtered_zwischenziele(
         self,
-        lernziel_id: int | None = None,
+        filters: Mapping[str, object],
         from_date: date | None = None,
         to_date: date | None = None,
     ) -> list["Zwischenziel"]:
         """Retrieve Zwischenziele matching the supplied optional filters."""
-        if from_date and to_date and from_date > to_date:
-            raise ValueError("from_date cannot be later than to_date.")
-        if lernziel_id:
-            await self.ensure_lernziel_exists(lernziel_id)
-
         stmt = select(Zwischenziel)
-        if lernziel_id:
-            stmt = stmt.where(Zwischenziel.lernziel_id == lernziel_id)
-        if from_date:
+        for field, value in filters.items():
+            stmt = stmt.where(getattr(Zwischenziel, field) == value)
+        if from_date is not None:
             stmt = stmt.where(Zwischenziel.start_date >= from_date.isoformat())
-        if to_date:
+        if to_date is not None:
             stmt = stmt.where(Zwischenziel.start_date <= to_date.isoformat())
 
         result = await self.db.scalars(stmt)

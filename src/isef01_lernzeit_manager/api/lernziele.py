@@ -2,7 +2,7 @@
 API routes Lernziele.
 """
 
-from datetime import date
+from datetime import UTC, date, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 
@@ -13,10 +13,12 @@ from isef01_lernzeit_manager.pydantic_models import (
     LernzieleUpdate,
     ZwischenzielResponse,
 )
+from isef01_lernzeit_manager.pydantic_models.helpers import Status
 from isef01_lernzeit_manager.services import (
     LernzieleService,
     get_lernziele_service,
 )
+from isef01_lernzeit_manager.services.lernziele import add_calendar_months
 
 router = APIRouter(prefix="/api/lernziele", tags=["lernziele"])
 
@@ -32,19 +34,23 @@ async def new_lernziel(
 
 
 @router.get("/", response_model=list[LernzieleResponse])
-async def get_all_lernziele(
+async def get_filtered_lernziele(
     service: LernzieleService = Depends(get_lernziele_service),
     from_date: date | None = Query(None, description="Format: YYYY-MM-DD"),
     to_date: date | None = Query(None, description="Format: YYYY-MM-DD"),
+    module_id: str | None = Query(None, min_length=1, description="Filter nach Modul-ID"),
+    filter_status: Status | None = Query(None, alias="status"),
 ) -> list[LernzieleResponse]:
-    """Alle Lernziele abrufen."""
-    if from_date or to_date:
-        try:
-            lernziele = await service.get_lernziele_in_range(from_date, to_date)
-        except ValueError as error:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error)) from error
-    else:
-        lernziele = await service.get_all_lernziele()
+    """Alle Lernziele oder passend zu den angegebenen Filtern abrufen."""
+    try:
+        lernziele = await service.get_filtered_lernziele(
+            module_id=module_id,
+            status=filter_status,
+            from_date=from_date,
+            to_date=to_date,
+        )
+    except ValueError as error:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error)) from error
     return [LernzieleResponse.model_validate(lernziel) for lernziel in lernziele]
 
 
@@ -52,8 +58,10 @@ async def get_all_lernziele(
 async def get_lernziele_next_6_months(
     service: LernzieleService = Depends(get_lernziele_service),
 ) -> list[LernzieleResponse]:
-    """Lernziele der nächsten 6 Monate abrufen."""
-    lernziele = await service.get_lernziele_next_6_months()
+    """Lernziele der nächsten 6 Monate abrufen (Kurzform des Startdatumsfilters)."""
+    today = datetime.now(UTC).date()
+    six_months_later = add_calendar_months(today, 6)
+    lernziele = await service.get_filtered_lernziele(from_date=today, to_date=six_months_later)
     return [LernzieleResponse.model_validate(lernziel) for lernziel in lernziele]
 
 

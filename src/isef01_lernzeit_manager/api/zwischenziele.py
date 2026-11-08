@@ -11,6 +11,7 @@ from isef01_lernzeit_manager.exceptions import (
     ZwischenzielHasDependentsError,
     ZwischenzielNotFoundError,
 )
+from isef01_lernzeit_manager.pydantic_models.helpers import Status
 from isef01_lernzeit_manager.pydantic_models.zwischenziele_models import ZwischenzielResponse, ZwischenzielUpdate
 from isef01_lernzeit_manager.services import (
     ZwischenzieleService,
@@ -34,15 +35,21 @@ async def new_zwischenziel(
 
 
 @router.get("/", response_model=list[ZwischenzielResponse])
-async def get_all_zwischenziele(
+async def get_filtered_zwischenziele(
     service: ZwischenzieleService = Depends(get_zwischenziele_service),
     lernziel_id: int | None = Query(default=None, ge=1, description="Filter nach Lernziel-ID"),
+    filter_status: Status | None = Query(default=None, alias="status"),
     from_date: date | None = Query(None, description="Format: YYYY-MM-DD"),
     to_date: date | None = Query(None, description="Format: YYYY-MM-DD"),
 ) -> list[ZwischenzielResponse]:
-    """Alle Zwischenziele abrufen."""
+    """Alle Zwischenziele oder passend zu den angegebenen Filtern abrufen."""
     try:
-        zwischenziele = await service.get_filtered_zwischenziele(lernziel_id, from_date, to_date)
+        zwischenziele = await service.get_filtered_zwischenziele(
+            lernziel_id=lernziel_id,
+            status=filter_status,
+            from_date=from_date,
+            to_date=to_date,
+        )
     except ValueError as error:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error)) from error
     except LernzielNotFoundError as error:

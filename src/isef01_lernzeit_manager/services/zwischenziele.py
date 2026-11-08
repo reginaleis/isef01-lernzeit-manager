@@ -90,6 +90,12 @@ class ZwischenzieleService:
             raise ZwischenzielNotFoundError(zwischenziel_id)
         return deleted
 
+    async def get_zwischenziele_by_lernziel_id(self, lernziel_id: int) -> list[Zwischenziel]:
+        """Retrieve all Zwischenziele associated with a specific Lernziel ID."""
+        logger.debug(f"Fetching Zwischenziele for Lernziel ID: {lernziel_id}")
+        await self.dao.ensure_lernziel_exists(lernziel_id)
+        return await self.dao.get_by_lernziel_id(lernziel_id)
+
 
 def get_zwischenziele_service(
     session: AsyncSession = Depends(get_session),

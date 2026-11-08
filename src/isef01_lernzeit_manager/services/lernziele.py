@@ -5,18 +5,17 @@ from calendar import monthrange
 from collections.abc import Mapping
 from datetime import UTC, date, datetime
 
+from fastapi import Depends
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from isef01_lernzeit_manager.exceptions import LernzielHasDependentsError, LernzielNotFoundError
 from isef01_lernzeit_manager.persistence.data_access import LernzieleDAO
+from isef01_lernzeit_manager.persistence.database import get_session
 from isef01_lernzeit_manager.persistence.tables import Lernziel
 from isef01_lernzeit_manager.pydantic_models import LernzieleCreate, LernzieleUpdate
 
 logger = logging.getLogger(__name__)
-
-
-class LernzielHasDependentsError(Exception):
-    """Raised when a Lernziel cannot be deleted because children reference it."""
 
 
 def add_calendar_months(value: date, months: int) -> date:
@@ -46,10 +45,13 @@ class LernzieleService:
         lernziel = LernzieleCreate.model_validate(lernziel_data)
         return await self.dao.create(lernziel.model_dump(mode="json"))
 
-    async def get_lernziel_by_id(self, lernziel_id: int) -> Lernziel | None:
+    async def get_lernziel_by_id(self, lernziel_id: int) -> Lernziel:
         """Retrieve a Lernziel by its ID."""
         logger.debug(f"Fetching Lernziel with ID: {lernziel_id}")
-        return await self.dao.get_by_id(lernziel_id)
+        lernziel = await self.dao.get_by_id(lernziel_id)
+        if lernziel is None:
+            raise LernzielNotFoundError(lernziel_id)
+        return lernziel
 
     async def update_lernziel(
         self,
@@ -60,7 +62,7 @@ class LernzieleService:
         logger.debug(f"Updating Lernziel with ID: {lernziel_id}")
         existing = await self.dao.get_by_id(lernziel_id)
         if existing is None:
-            return None
+            raise LernzielNotFoundError(lernziel_id)
         update_data = LernzieleUpdate.model_validate(lernziel_data)
         merged_data = {
             "title": existing.title,
@@ -81,10 +83,13 @@ class LernzieleService:
         if await self.dao.has_dependents(lernziel_id):
             raise LernzielHasDependentsError(lernziel_id)
         try:
-            return await self.dao.delete(lernziel_id)
+            lernziel = await self.dao.delete(lernziel_id)
         except IntegrityError as error:
             await self.dao.db.rollback()
             raise LernzielHasDependentsError(lernziel_id) from error
+        if lernziel is None:
+            raise LernzielNotFoundError(lernziel_id)
+        return lernziel
 
     async def get_lernziele_next_6_months(self) -> list[Lernziel]:
         """Retrieve Lernziele for the next 6 months."""
@@ -92,3 +97,10 @@ class LernzieleService:
         today = datetime.now(UTC).date()
         six_months_later = add_calendar_months(today, 6)
         return await self.dao.get_lernziele_in_range(from_date=today, to_date=six_months_later)
+
+
+def get_lernziele_service(
+    session: AsyncSession = Depends(get_session),
+) -> LernzieleService:
+    """Request-scoped Lernziele service."""
+    return LernzieleService(session)

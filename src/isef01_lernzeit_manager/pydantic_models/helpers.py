@@ -1,7 +1,9 @@
 from datetime import UTC, date, datetime
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic import BeforeValidator
+
+Status = Literal["not_started", "in_progress", "completed", "overdue"]
 
 
 def normalize_to_utc_date(value: object) -> date | object | None:

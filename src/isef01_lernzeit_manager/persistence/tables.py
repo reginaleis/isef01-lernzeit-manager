@@ -14,7 +14,7 @@ from isef01_lernzeit_manager.persistence.database import Base
 
 
 class Status(Enum):
-    """Enum for the status of a Zwischenziel or a Lernziel."""
+    """Enum für den Status von Lernzeiten, Zwischenzielen oder Lernzielen."""
 
     NOT_STARTED = "not_started"
     IN_PROGRESS = "in_progress"
@@ -23,13 +23,13 @@ class Status(Enum):
 
 
 class Lernzeiten(Base):
-    """Database model for Lernzeiten."""
+    """DB Tabelle Lernzeiten."""
 
     __tablename__ = "lernzeiten"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     zwischenziel_id: Mapped[int | None] = mapped_column(nullable=True)
-    lernziel_id: Mapped[int] = mapped_column(ForeignKey("lernziele.id"), nullable=False)
+    lernziel_id: Mapped[int | None] = mapped_column(ForeignKey("lernziele.id"), nullable=True)
     date: Mapped[str] = mapped_column(nullable=False)
     duration: Mapped[int] = mapped_column(nullable=False)
     zwischenziel: Mapped["Zwischenziel | None"] = relationship(
@@ -51,7 +51,7 @@ class Lernzeiten(Base):
 
 
 class Zwischenziel(Base):
-    """Database model for Zwischenziel."""
+    """DB Tabelle Zwischenziel."""
 
     __tablename__ = "zwischenziele"
 
@@ -78,7 +78,7 @@ class Zwischenziel(Base):
 
 
 class Lernziel(Base):
-    """Database model for Lernziel."""
+    """DB Tabelle Lernziel."""
 
     __tablename__ = "lernziele"
 

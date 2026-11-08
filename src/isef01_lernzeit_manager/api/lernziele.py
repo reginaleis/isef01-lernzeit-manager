@@ -3,26 +3,20 @@ API routes Lernziele.
 """
 
 from fastapi import APIRouter, Depends, HTTPException, Path, status
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from isef01_lernzeit_manager.persistence.database import get_session
+from isef01_lernzeit_manager.exceptions import LernzielHasDependentsError, LernzielNotFoundError
 from isef01_lernzeit_manager.pydantic_models import (
     LernzieleCreate,
     LernzieleResponse,
     LernzieleUpdate,
     ZwischenzielResponse,
 )
-from isef01_lernzeit_manager.services import LernzieleService
-from isef01_lernzeit_manager.services.lernziele import LernzielHasDependentsError
+from isef01_lernzeit_manager.services import (
+    LernzieleService,
+    get_lernziele_service,
+)
 
 router = APIRouter(prefix="/api/lernziele", tags=["lernziele"])
-
-
-def get_lernziele_service(
-    session: AsyncSession = Depends(get_session),
-) -> LernzieleService:
-    """Request-scoped Lernziele service."""
-    return LernzieleService(session)
 
 
 @router.post("/", response_model=LernzieleResponse, status_code=status.HTTP_201_CREATED)
@@ -59,9 +53,10 @@ async def get_lernziel(
     service: LernzieleService = Depends(get_lernziele_service),
 ) -> LernzieleResponse:
     """Lernziel nach ID abrufen."""
-    lernziel = await service.get_lernziel_by_id(lernziel_id)
-    if lernziel is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lernziel not found")
+    try:
+        lernziel = await service.get_lernziel_by_id(lernziel_id)
+    except LernzielNotFoundError as error:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from error
     return LernzieleResponse.model_validate(lernziel)
 
 
@@ -72,9 +67,10 @@ async def update_lernziel(
     service: LernzieleService = Depends(get_lernziele_service),
 ) -> LernzieleResponse:
     """Lernziel aktualisieren."""
-    lernziel = await service.update_lernziel(lernziel_id, update)
-    if lernziel is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lernziel not found")
+    try:
+        lernziel = await service.update_lernziel(lernziel_id, update)
+    except LernzielNotFoundError as error:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from error
     return LernzieleResponse.model_validate(lernziel)
 
 
@@ -89,10 +85,10 @@ async def delete_lernziel(
     except LernzielHasDependentsError:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Lernziel cannot be deleted while Zwischenziele or Lernzeiten exist",
+            detail="Lernziel kann nicht gelöscht werden, solange Zwischenziele oder Lernzeiten referenziert werden.",
         ) from None
-    if lernziel is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lernziel not found")
+    except LernzielNotFoundError as error:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from error
     return LernzieleResponse.model_validate(lernziel)
 
 

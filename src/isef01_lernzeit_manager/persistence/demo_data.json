@@ -2,29 +2,19 @@
   "lernziele": [
     {
       "id": 1,
-      "title": "MS0",
-      "description": "Meilensteinplan bereitgestellt.",
+      "title": "Projekt: Software Engineering",
+      "description": "Gruppenprojekt zu einem Praxisszenario der industriellen SW-Entwicklung.",
       "module_id": "ISEF01",
-      "start_date": "2026-11-01",
-      "end_date": "2026-11-30",
+      "start_date": "2026-10-01",
+      "end_date": "2026-12-31",
       "accumulated_study_time": 120,
       "status": "in_progress"
-    },
-    {
-      "id": 2,
-      "title": "MS1",
-      "description": "Projektkonfiguration bereitgestellt.",
-      "module_id": "DBS01",
-      "start_date": "2026-11-10",
-      "end_date": "2026-12-15",
-      "accumulated_study_time": 0,
-      "status": "not_started"
     }
   ],
   "zwischenziele": [
     {
       "id": 1,
-      "title": "PDF in Redmine hochladen.",
+      "title": "MS 0: Meilensteinplan bereitgestellt.",
       "description": null,
       "lernziel_id": 1,
       "start_date": "2026-11-01",
@@ -34,7 +24,7 @@
     },
     {
       "id": 2,
-      "title": "Projektkonfiguration mit dem Team reviewen.",
+      "title": "MS 1: Projektkonfiguration bereitgestellt",
       "description": null,
       "lernziel_id": 1,
       "start_date": "2026-11-11",
@@ -44,9 +34,49 @@
     },
     {
       "id": 3,
-      "title": "Projektkonfiguration in Redmine hochladen.",
+      "title": "MS 2: Projektvideo bereitgestellt",
       "description": null,
-      "lernziel_id": 2,
+      "lernziel_id": 1,
+      "start_date": "2026-11-10",
+      "end_date": "2026-11-25",
+      "accumulated_study_time": 0,
+      "status": "not_started"
+    },
+    {
+      "id": 4,
+      "title": "MS 3: Konfiguration der Softwareentwicklung und Qualitätsplanung der Liefergegenstände bereitgestellt",
+      "description": null,
+      "lernziel_id": 1,
+      "start_date": "2026-11-10",
+      "end_date": "2026-11-25",
+      "accumulated_study_time": 0,
+      "status": "not_started"
+    },
+    {
+      "id": 5,
+      "title": "MS 4: Softwaresystem und Dokumentation bereitgestellt",
+      "description": null,
+      "lernziel_id": 1,
+      "start_date": "2026-11-10",
+      "end_date": "2026-11-25",
+      "accumulated_study_time": 0,
+      "status": "not_started"
+    },
+    {
+      "id": 6,
+      "title": "MS 5: Ergebnispräsentation als Video bereitgestellt",
+      "description": null,
+      "lernziel_id": 1,
+      "start_date": "2026-11-10",
+      "end_date": "2026-11-25",
+      "accumulated_study_time": 0,
+      "status": "not_started"
+    },
+    {
+      "id": 7,
+      "title": "MS 6: Projektbericht bereitgestellt",
+      "description": null,
+      "lernziel_id": 1,
       "start_date": "2026-11-10",
       "end_date": "2026-11-25",
       "accumulated_study_time": 0,
@@ -61,6 +91,11 @@
     },
     {
       "lernziel_id": 1,
+      "date": "2026-11-02",
+      "duration": 60
+    },
+    {
+      "zwischenziel_id": 3,
       "date": "2026-11-02",
       "duration": 60
     }

@@ -15,6 +15,13 @@ class ZwischenzielNotFoundError(LookupError):
         super().__init__(f"Das Zwischenziel mit der ID {zwischenziel_id} wurde nicht gefunden.")
 
 
+class LernzeitNotFoundError(LookupError):
+    """Raised when a requested Lernzeit does not exist."""
+
+    def __init__(self, lernzeit_id: int):
+        super().__init__(f"Die Lernzeit mit der ID {lernzeit_id} wurde nicht gefunden.")
+
+
 class LernzielHasDependentsError(Exception):
     """Raised when a Lernziel cannot be deleted because children reference it."""
 

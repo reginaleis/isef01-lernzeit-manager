@@ -18,11 +18,11 @@ configure_logging()
 
 from .api import (  # noqa: E402
     demo_router,
-    goals_router,
-    milestones_router,
+    lernzeiten_router,
+    lernziele_router,
     notifications_router,
-    sessions_router,
     timer_router,
+    zwischenziele_router,
 )
 from .persistence.database import Base, engine  # noqa: E402
 
@@ -106,12 +106,12 @@ async def db_exception_handler(request: Request, exc: sqlite3.Error) -> JSONResp
 # Module Routers
 # --------------
 
-app.include_router(goals_router)
-app.include_router(milestones_router)
+app.include_router(lernziele_router)
+app.include_router(zwischenziele_router)
+app.include_router(lernzeiten_router)
 app.include_router(demo_router)
 app.include_router(timer_router)
 app.include_router(notifications_router)
-app.include_router(sessions_router)
 
 # ------------------------------
 # Main Application API Endpoints

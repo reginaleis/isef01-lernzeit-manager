@@ -6,7 +6,7 @@ from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from isef01_lernzeit_manager.pydantic_models.helpers import Status, UTCDate, check_dates_start_before_end
+from isef01_lernzeit_manager.pydantic_models.helpers import ExamType, Status, UTCDate, check_dates_start_before_end
 
 
 class LernzieleBase(BaseModel):
@@ -15,8 +15,11 @@ class LernzieleBase(BaseModel):
     title: Annotated[str, Field(min_length=1)]
     description: str | None = None
     module_id: Annotated[str, Field(min_length=1)]
+    exam_type: ExamType | None = None
+    ects: int | None = Field(default=None, ge=0)
     start_date: UTCDate = None
     end_date: UTCDate = None
+    completed_on: UTCDate = None
     status: Status = "not_started"
     accumulated_study_time: int = Field(default=0, ge=0)
 

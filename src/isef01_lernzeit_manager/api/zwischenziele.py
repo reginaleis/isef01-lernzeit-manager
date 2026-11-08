@@ -2,24 +2,82 @@
 API routes Zwischenziele.
 """
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Path, status
+
+from isef01_lernzeit_manager.exceptions import (
+    LernzielNotFoundError,
+    ZwischenzielHasDependentsError,
+    ZwischenzielNotFoundError,
+)
+from isef01_lernzeit_manager.pydantic_models.zwischenziele_models import ZwischenzielResponse, ZwischenzielUpdate
+from isef01_lernzeit_manager.services import (
+    ZwischenzieleService,
+    get_zwischenziele_service,
+)
 
 router = APIRouter(prefix="/api/zwischenziele", tags=["zwischenziele"])
 
 
-@router.get("/{zwischenziel_id}")
-async def get_zwischenziel(zwischenziel_id: int) -> dict:
+@router.post("/", response_model=ZwischenzielResponse, status_code=status.HTTP_201_CREATED)
+async def new_zwischenziel(
+    zwischenziel: ZwischenzielUpdate,
+    service: ZwischenzieleService = Depends(get_zwischenziele_service),
+) -> ZwischenzielResponse:
+    """Neues Zwischenziel anlegen."""
+    try:
+        created_zwischenziel = await service.create_zwischenziel(zwischenziel.model_dump())
+    except LernzielNotFoundError as error:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from error
+    return ZwischenzielResponse.model_validate(created_zwischenziel)
+
+
+@router.get("/", response_model=list[ZwischenzielResponse])
+async def get_all_zwischenziele(
+    service: ZwischenzieleService = Depends(get_zwischenziele_service),
+) -> list[ZwischenzielResponse]:
+    """Alle Zwischenziele abrufen."""
+    zwischenziele = await service.get_all_zwischenziele()
+    return [ZwischenzielResponse.model_validate(zwischenziel) for zwischenziel in zwischenziele]
+
+
+@router.get("/{zwischenziel_id}", response_model=ZwischenzielResponse)
+async def get_zwischenziel(
+    zwischenziel_id: int = Path(ge=1), service: ZwischenzieleService = Depends(get_zwischenziele_service)
+) -> ZwischenzielResponse:
     """Ein Zwischenziel abrufen."""
-    raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED)
+    try:
+        zwischenziel = await service.get_zwischenziel(zwischenziel_id)
+    except ZwischenzielNotFoundError as error:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from error
+    return ZwischenzielResponse.model_validate(zwischenziel)
 
 
-@router.put("/{zwischenziel_id}")
-async def update_zwischenziel(zwischenziel_id: int) -> dict:
+@router.put("/{zwischenziel_id}", response_model=ZwischenzielResponse)
+async def update_zwischenziel(
+    update: ZwischenzielUpdate,
+    zwischenziel_id: int = Path(ge=1),
+    service: ZwischenzieleService = Depends(get_zwischenziele_service),
+) -> ZwischenzielResponse:
     """Ein Zwischenziel aktualisieren."""
-    raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED)
+    try:
+        updated_zwischenziel = await service.update_zwischenziel(zwischenziel_id, update.model_dump())
+    except LernzielNotFoundError as error:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from error
+    except ZwischenzielNotFoundError as error:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from error
+    return ZwischenzielResponse.model_validate(updated_zwischenziel)
 
 
-@router.delete("/{zwischenziel_id}")
-async def delete_zwischenziel(zwischenziel_id: int) -> dict:
+@router.delete("/{zwischenziel_id}", response_model=ZwischenzielResponse)
+async def delete_zwischenziel(
+    zwischenziel_id: int = Path(ge=1),
+    service: ZwischenzieleService = Depends(get_zwischenziele_service),
+) -> ZwischenzielResponse:
     """Ein Zwischenziel löschen."""
-    raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED)
+    try:
+        zwischenziel = await service.delete_zwischenziel(zwischenziel_id)
+    except ZwischenzielHasDependentsError as error:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(error)) from error
+    except ZwischenzielNotFoundError as error:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from error
+    return ZwischenzielResponse.model_validate(zwischenziel)

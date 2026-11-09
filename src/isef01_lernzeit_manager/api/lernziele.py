@@ -11,7 +11,6 @@ from isef01_lernzeit_manager.pydantic_models import (
     LernzieleCreate,
     LernzieleResponse,
     LernzieleUpdate,
-    ZwischenzielResponse,
 )
 from isef01_lernzeit_manager.pydantic_models.helpers import Status
 from isef01_lernzeit_manager.services import (
@@ -108,21 +107,3 @@ async def delete_lernziel(
     except LernzielNotFoundError as error:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from error
     return LernzieleResponse.model_validate(lernziel)
-
-
-@router.get("/{lernziel_id}/zwischenziele", response_model=list[ZwischenzielResponse])
-async def get_zwischenziele_for_lernziel(lernziel_id: int) -> dict:
-    """Zwischenziele eines Lernziels abrufen."""
-    raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED)
-
-
-@router.get("/{lernziel_id}/zwischenziele/{zwischenziel_id}", response_model=ZwischenzielResponse)
-async def get_zwischenziel_for_lernziel(lernziel_id: int, zwischenziel_id: int) -> dict:
-    """Ein Zwischenziel eines Lernziels abrufen."""
-    raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED)
-
-
-@router.post("/{lernziel_id}/zwischenziele")
-async def new_zwischenziel_for_lernziel(lernziel_id: int) -> dict:
-    """Neues Zwischenziel für ein Lernziel anlegen."""
-    raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED)

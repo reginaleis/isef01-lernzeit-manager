@@ -18,6 +18,7 @@ class LernzeitBase(BaseModel):
     planned_end_time: UTCDateTime = None
     actual_start_time: UTCDateTime = None
     actual_end_time: UTCDateTime = None
+    duration: int = Field(default=0, ge=0, description="Actual study time in whole minutes")
     status: LernzeitStatus = "geplant"
 
     model_config = ConfigDict(from_attributes=True)

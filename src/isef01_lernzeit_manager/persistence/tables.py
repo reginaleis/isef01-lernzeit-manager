@@ -42,6 +42,7 @@ class Lernzeiten(Base):
     planned_end_time: Mapped[str | None] = mapped_column(nullable=True, default=None)
     actual_start_time: Mapped[str | None] = mapped_column(nullable=True, default=None)
     actual_end_time: Mapped[str | None] = mapped_column(nullable=True, default=None)
+    duration: Mapped[int] = mapped_column(default=0, server_default="0", nullable=False)
     status: Mapped[str] = mapped_column(
         default=StatusLernzeit.GEPLANT.value,
         server_default=StatusLernzeit.GEPLANT.value,
@@ -61,6 +62,7 @@ class Lernzeiten(Base):
             "AND julianday(actual_start_time) < julianday(actual_end_time))",
             name="ck_lernzeiten_actual_start_before_end",
         ),
+        CheckConstraint("duration >= 0", name="ck_lernzeiten_duration_nonnegative"),
         Index("idx_lernzeiten_zwischenziel_id", "zwischenziel_id"),
     )
 

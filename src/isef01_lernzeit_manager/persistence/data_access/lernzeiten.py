@@ -84,3 +84,57 @@ class LernzeitenDAO:
         stmt = select(Zwischenziel.id).where(Zwischenziel.id == zwischenziel_id)
         if await self.db.scalar(stmt) is None:
             raise ZwischenzielNotFoundError(zwischenziel_id)
+
+    async def recalculate_accumulated_study_times(
+        self,
+        lernziel_ids: set[int],
+        zwischenziel_ids: set[int],
+    ) -> None:
+        """Recalculate affected totals from actual Lernzeit start/end timestamps."""
+        if not lernziel_ids and not zwischenziel_ids:
+            return
+
+        affected_lernziele = set(lernziel_ids)
+        if zwischenziel_ids:
+            zwischenziel_result = await self.db.scalars(
+                select(Zwischenziel).where(Zwischenziel.id.in_(zwischenziel_ids))
+            )
+            zwischenziele = list(zwischenziel_result.all())
+            affected_lernziele.update(zwischenziel.lernziel_id for zwischenziel in zwischenziele)
+
+            lernzeiten_result = await self.db.scalars(
+                select(Lernzeiten).where(Lernzeiten.zwischenziel_id.in_(zwischenziel_ids))
+            )
+            zwischenziel_totals = {zwischenziel_id: 0 for zwischenziel_id in zwischenziel_ids}
+            for lernzeit in lernzeiten_result.all():
+                if lernzeit.zwischenziel_id is not None:
+                    zwischenziel_totals[lernzeit.zwischenziel_id] += lernzeit.duration
+            for zwischenziel in zwischenziele:
+                zwischenziel.accumulated_study_time = zwischenziel_totals[zwischenziel.id]
+
+        if affected_lernziele:
+            direct_lernzeiten_result = await self.db.scalars(
+                select(Lernzeiten).where(Lernzeiten.lernziel_id.in_(affected_lernziele))
+            )
+            direct_totals = {lernziel_id: 0 for lernziel_id in affected_lernziele}
+            for lernzeit in direct_lernzeiten_result.all():
+                if lernzeit.lernziel_id is not None:
+                    direct_totals[lernzeit.lernziel_id] += lernzeit.duration
+
+            child_result = await self.db.scalars(
+                select(Zwischenziel).where(Zwischenziel.lernziel_id.in_(affected_lernziele))
+            )
+            children_by_lernziel: dict[int, list[Zwischenziel]] = {
+                lernziel_id: [] for lernziel_id in affected_lernziele
+            }
+            for zwischenziel in child_result.all():
+                children_by_lernziel[zwischenziel.lernziel_id].append(zwischenziel)
+
+            lernziel_result = await self.db.scalars(select(Lernziel).where(Lernziel.id.in_(affected_lernziele)))
+            for lernziel in lernziel_result.all():
+                child_total = sum(
+                    zwischenziel.accumulated_study_time for zwischenziel in children_by_lernziel[lernziel.id]
+                )
+                lernziel.accumulated_study_time = direct_totals[lernziel.id] + child_total
+
+        await self.db.commit()

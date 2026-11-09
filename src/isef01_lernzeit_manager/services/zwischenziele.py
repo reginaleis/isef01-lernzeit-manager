@@ -15,7 +15,7 @@ from isef01_lernzeit_manager.exceptions import (
 from isef01_lernzeit_manager.persistence.data_access import ZwischenzieleDAO
 from isef01_lernzeit_manager.persistence.database import get_session
 from isef01_lernzeit_manager.persistence.tables import Zwischenziel
-from isef01_lernzeit_manager.pydantic_models import ZwischenzielCreate, ZwischenzielUpdate
+from isef01_lernzeit_manager.pydantic_models import ZwischenzielCreate, ZwischenzielResponse, ZwischenzielUpdate
 from isef01_lernzeit_manager.pydantic_models.helpers import Status
 
 logger = logging.getLogger(__name__)
@@ -55,18 +55,14 @@ class ZwischenzieleService:
         if existing is None:
             raise ZwischenzielNotFoundError(zwischenziel_id)
         update_data = ZwischenzielUpdate.model_validate(zwischenziel_data)
+        changes = update_data.model_dump(mode="json", exclude_unset=True)
         merged_data = {
-            "title": existing.title,
-            "description": existing.description,
-            "lernziel_id": existing.lernziel_id,
-            "start_date": existing.start_date,
-            "end_date": existing.end_date,
-            "accumulated_study_time": existing.accumulated_study_time,
-            "status": existing.status,
+            **ZwischenzielResponse.model_validate(existing).model_dump(mode="json", exclude={"id"}),
+            **changes,
         }
-        merged_data.update(update_data.model_dump(mode="json", exclude_unset=True))
+        ZwischenzielCreate.model_validate(merged_data)
         await self.dao.ensure_lernziel_exists(merged_data["lernziel_id"])
-        return await self.dao.update(zwischenziel_id, merged_data)
+        return await self.dao.update(zwischenziel_id, changes)
 
     async def delete_zwischenziel(self, zwischenziel_id: int) -> Zwischenziel | None:
         """Delete a Zwischenziel by its ID."""

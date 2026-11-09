@@ -13,7 +13,7 @@ from isef01_lernzeit_manager.exceptions import LernzielHasDependentsError, Lernz
 from isef01_lernzeit_manager.persistence.data_access import LernzieleDAO
 from isef01_lernzeit_manager.persistence.database import get_session
 from isef01_lernzeit_manager.persistence.tables import Lernziel
-from isef01_lernzeit_manager.pydantic_models import LernzieleCreate, LernzieleUpdate
+from isef01_lernzeit_manager.pydantic_models import LernzieleCreate, LernzieleResponse, LernzieleUpdate
 from isef01_lernzeit_manager.pydantic_models.helpers import Status
 
 logger = logging.getLogger(__name__)
@@ -60,18 +60,13 @@ class LernzieleService:
         if existing is None:
             raise LernzielNotFoundError(lernziel_id)
         update_data = LernzieleUpdate.model_validate(lernziel_data)
+        changes = update_data.model_dump(mode="json", exclude_unset=True)
         merged_data = {
-            "title": existing.title,
-            "description": existing.description,
-            "module_id": existing.module_id,
-            "start_date": existing.start_date,
-            "end_date": existing.end_date,
-            "status": existing.status,
-            "accumulated_study_time": existing.accumulated_study_time,
-            **update_data.model_dump(mode="json", exclude_unset=True),
+            **LernzieleResponse.model_validate(existing).model_dump(mode="json", exclude={"id"}),
+            **changes,
         }
         LernzieleCreate.model_validate(merged_data)
-        return await self.dao.update(lernziel_id, update_data.model_dump(mode="json", exclude_unset=True))
+        return await self.dao.update(lernziel_id, changes)
 
     async def delete_lernziel(self, lernziel_id: int) -> Lernziel | None:
         """Delete a Lernziel by its ID."""

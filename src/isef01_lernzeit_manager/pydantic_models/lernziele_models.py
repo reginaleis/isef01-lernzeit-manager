@@ -12,16 +12,12 @@ from isef01_lernzeit_manager.pydantic_models.helpers import ExamType, Status, UT
 class LernzieleBase(BaseModel):
     """Basis-Schema für Lernziele."""
 
-    title: Annotated[str, Field(min_length=1)]
     description: str | None = None
-    module_id: Annotated[str, Field(min_length=1)]
     exam_type: ExamType | None = None
     ects: int | None = Field(default=None, ge=0)
     start_date: UTCDate = None
     end_date: UTCDate = None
     completed_on: UTCDate = None
-    status: Status = "not_started"
-    accumulated_study_time: int = Field(default=0, ge=0)
 
     model_config = ConfigDict(extra="forbid")
 
@@ -35,16 +31,24 @@ class LernzieleBase(BaseModel):
 class LernzieleCreate(LernzieleBase):
     """Schema für das Anlegen eines Lernziels."""
 
+    title: Annotated[str, Field(min_length=1)]
+    module_id: Annotated[str, Field(min_length=1)]
+    status: Status = "not_started"
+    accumulated_study_time: int = Field(default=0, ge=0)
+
     model_config = ConfigDict(extra="forbid")
 
 
 class LernzieleUpdate(LernzieleBase):
     """Schema für Lernziele API-Update."""
 
-    model_config = ConfigDict(extra="forbid")
+    title: str | None = Field(default=None, min_length=1)
+    module_id: str | None = Field(default=None, min_length=1)
+    status: Status | None = None
+    accumulated_study_time: int | None = Field(default=None, ge=0)
 
 
-class LernzieleResponse(LernzieleBase):
+class LernzieleResponse(LernzieleCreate):
     """Schema für Lernziele API-Response."""
 
     id: int = Field(ge=1)

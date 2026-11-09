@@ -12,7 +12,11 @@ from isef01_lernzeit_manager.exceptions import (
     ZwischenzielNotFoundError,
 )
 from isef01_lernzeit_manager.pydantic_models.helpers import Status
-from isef01_lernzeit_manager.pydantic_models.zwischenziele_models import ZwischenzielResponse, ZwischenzielUpdate
+from isef01_lernzeit_manager.pydantic_models.zwischenziele_models import (
+    ZwischenzielCreate,
+    ZwischenzielResponse,
+    ZwischenzielUpdate,
+)
 from isef01_lernzeit_manager.services import (
     ZwischenzieleService,
     get_zwischenziele_service,
@@ -23,7 +27,7 @@ router = APIRouter(prefix="/api/zwischenziele", tags=["zwischenziele"])
 
 @router.post("/", response_model=ZwischenzielResponse, status_code=status.HTTP_201_CREATED)
 async def new_zwischenziel(
-    zwischenziel: ZwischenzielUpdate,
+    zwischenziel: ZwischenzielCreate,
     service: ZwischenzieleService = Depends(get_zwischenziele_service),
 ) -> ZwischenzielResponse:
     """Neues Zwischenziel anlegen."""
@@ -77,7 +81,7 @@ async def update_zwischenziel(
 ) -> ZwischenzielResponse:
     """Ein Zwischenziel aktualisieren."""
     try:
-        updated_zwischenziel = await service.update_zwischenziel(zwischenziel_id, update.model_dump())
+        updated_zwischenziel = await service.update_zwischenziel(zwischenziel_id, update)
     except LernzielNotFoundError as error:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from error
     except ZwischenzielNotFoundError as error:

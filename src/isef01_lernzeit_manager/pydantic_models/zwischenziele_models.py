@@ -10,13 +10,9 @@ from isef01_lernzeit_manager.pydantic_models.helpers import Status, UTCDate, che
 class ZwischenzielBase(BaseModel):
     """Basis-Schema für Zwischenziele."""
 
-    title: str = Field(min_length=1)
     description: str | None = None
     start_date: UTCDate | None = None
     end_date: UTCDate | None = None
-    accumulated_study_time: int = Field(ge=0, default=0)
-    lernziel_id: int = Field(ge=0)
-    status: Status = "not_started"
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -30,16 +26,24 @@ class ZwischenzielBase(BaseModel):
 class ZwischenzielCreate(ZwischenzielBase):
     """Schema für Zwischenziele API-Request."""
 
+    title: str = Field(min_length=1)
+    accumulated_study_time: int = Field(ge=0, default=0)
+    lernziel_id: int = Field(ge=0)
+    status: Status = "not_started"
+
     model_config = ConfigDict(from_attributes=True)
 
 
 class ZwischenzielUpdate(ZwischenzielBase):
     """Schema für Zwischenziele API-Request."""
 
-    model_config = ConfigDict(from_attributes=True)
+    title: str | None = Field(default=None, min_length=1)
+    accumulated_study_time: int | None = Field(default=None, ge=0)
+    lernziel_id: int | None = Field(default=None, ge=0)
+    status: Status | None = None
 
 
-class ZwischenzielResponse(ZwischenzielBase):
+class ZwischenzielResponse(ZwischenzielCreate):
     """Schema für Zwischenziele API-Response."""
 
     id: int = Field(ge=0)

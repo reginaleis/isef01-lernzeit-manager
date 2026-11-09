@@ -11,7 +11,7 @@ from isef01_lernzeit_manager.exceptions import LernzeitNotFoundError
 from isef01_lernzeit_manager.persistence.data_access import LernzeitenDAO
 from isef01_lernzeit_manager.persistence.database import get_session
 from isef01_lernzeit_manager.persistence.tables import Lernzeiten
-from isef01_lernzeit_manager.pydantic_models import LernzeitCreate, LernzeitUpdate
+from isef01_lernzeit_manager.pydantic_models import LernzeitCreate, LernzeitResponse, LernzeitUpdate
 from isef01_lernzeit_manager.pydantic_models.lernzeiten_models import LernzeitStatus
 
 logger = logging.getLogger(__name__)
@@ -71,14 +71,20 @@ class LernzeitenService:
         old_lernziel_id = existing.lernziel_id
         old_zwischenziel_id = existing.zwischenziel_id
         update_data = LernzeitUpdate.model_validate(lernzeit_data)
-        data = update_data.model_dump(mode="json", exclude_unset=True)
-        actual_start_time = update_data.actual_start_time if "actual_start_time" in data else existing.actual_start_time
-        actual_end_time = update_data.actual_end_time if "actual_end_time" in data else existing.actual_end_time
-        if actual_start_time is not None and actual_end_time is not None:
-            data["duration"] = self.calculate_actual_duration(actual_start_time, actual_end_time)
-        await self.dao.ensure_lernziel_exists(data.get("lernziel_id"))
-        await self.dao.ensure_zwischenziel_exists(data.get("zwischenziel_id"))
-        updated_lernzeit = await self.dao.update(lernzeit_id, data)
+        changes = update_data.model_dump(mode="json", exclude_unset=True)
+        merged_data = {
+            **LernzeitResponse.model_validate(existing).model_dump(mode="json", exclude={"id"}),
+            **changes,
+        }
+        validated_data = LernzeitCreate.model_validate(merged_data)
+        if validated_data.actual_start_time is not None and validated_data.actual_end_time is not None:
+            changes["duration"] = self.calculate_actual_duration(
+                validated_data.actual_start_time,
+                validated_data.actual_end_time,
+            )
+        await self.dao.ensure_lernziel_exists(validated_data.lernziel_id)
+        await self.dao.ensure_zwischenziel_exists(validated_data.zwischenziel_id)
+        updated_lernzeit = await self.dao.update(lernzeit_id, changes)
         if updated_lernzeit is None:
             raise LernzeitNotFoundError(lernzeit_id)
         await self.dao.recalculate_accumulated_study_times(

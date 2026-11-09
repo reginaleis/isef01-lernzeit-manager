@@ -2,31 +2,49 @@
   "lernziele": [
     {
       "id": 1,
-      "title": "MS0",
-      "description": "Meilensteinplan bereitgestellt.",
+      "title": "Einführung in das wissenschaftliche Arbeiten",
+      "description": "Grundlagen wissenschaftlicher Arbeit.",
+      "module_id": "BWIR01",
+      "exam_type": "Workbook",
+      "ects": 5,
+      "start_date": "2026-01-15",
+      "end_date": "2026-03-15",
+      "accumulated_study_time": 150,
+      "status": "completed",
+      "completed_on": "2026-03-18"
+    },
+    {
+      "id": 2,
+      "title": "Projekt: Software Engineering",
+      "description": "Gruppenprojekt zu einem Praxisszenario der industriellen SW-Entwicklung.",
       "module_id": "ISEF01",
-      "start_date": "2026-11-01",
-      "end_date": "2026-11-30",
+      "exam_type": "Projektarbeit",
+      "ects": 5,
+      "start_date": "2026-10-01",
+      "end_date": "2026-12-31",
       "accumulated_study_time": 120,
       "status": "in_progress"
     },
     {
-      "id": 2,
-      "title": "MS1",
-      "description": "Projektkonfiguration bereitgestellt.",
-      "module_id": "DBS01",
-      "start_date": "2026-11-10",
-      "end_date": "2026-12-15",
+      "id": 3,
+      "title": "Bachelorarbeit",
+      "description": "Abschlussthesis im Rahmen des Bachelorstudiums.",
+      "module_id": "BBAK01",
+      "exam_type": "Thesis",
+      "ects": 10,
+      "start_date": "2027-01-01",
+      "end_date": "2027-03-31",
       "accumulated_study_time": 0,
       "status": "not_started"
     }
+
   ],
   "zwischenziele": [
     {
       "id": 1,
-      "title": "PDF in Redmine hochladen.",
+      "title": "MS 0: Meilensteinplan bereitgestellt.",
       "description": null,
-      "lernziel_id": 1,
+      "lernziel_id": 2,
       "start_date": "2026-11-01",
       "end_date": "2026-11-10",
       "accumulated_study_time": 120,
@@ -34,9 +52,9 @@
     },
     {
       "id": 2,
-      "title": "Projektkonfiguration mit dem Team reviewen.",
+      "title": "MS 1: Projektkonfiguration bereitgestellt",
       "description": null,
-      "lernziel_id": 1,
+      "lernziel_id": 2,
       "start_date": "2026-11-11",
       "end_date": "2026-11-30",
       "accumulated_study_time": 240,
@@ -44,9 +62,99 @@
     },
     {
       "id": 3,
-      "title": "Projektkonfiguration in Redmine hochladen.",
+      "title": "MS 2: Projektvideo bereitgestellt",
       "description": null,
       "lernziel_id": 2,
+      "start_date": "2026-11-10",
+      "end_date": "2026-11-25",
+      "accumulated_study_time": 0,
+      "status": "not_started"
+    },
+    {
+      "id": 4,
+      "title": "MS 3: Konfiguration der Softwareentwicklung und Qualitätsplanung der Liefergegenstände bereitgestellt",
+      "description": null,
+      "lernziel_id": 2,
+      "start_date": "2026-11-10",
+      "end_date": "2026-11-25",
+      "accumulated_study_time": 0,
+      "status": "not_started"
+    },
+    {
+      "id": 5,
+      "title": "MS 4: Softwaresystem und Dokumentation bereitgestellt",
+      "description": null,
+      "lernziel_id": 2,
+      "start_date": "2026-11-10",
+      "end_date": "2026-11-25",
+      "accumulated_study_time": 0,
+      "status": "not_started"
+    },
+    {
+      "id": 6,
+      "title": "MS 5: Ergebnispräsentation als Video bereitgestellt",
+      "description": null,
+      "lernziel_id": 2,
+      "start_date": "2026-11-10",
+      "end_date": "2026-11-25",
+      "accumulated_study_time": 0,
+      "status": "not_started"
+    },
+    {
+      "id": 7,
+      "title": "MS 6: Projektbericht bereitgestellt",
+      "description": null,
+      "lernziel_id": 2,
+      "start_date": "2026-11-10",
+      "end_date": "2026-11-25",
+      "accumulated_study_time": 0,
+      "status": "not_started"
+    },
+    {
+      "id": 8,
+      "title": "Literaturrecherche und -analyse.",
+      "description": null,
+      "lernziel_id": 3,
+      "start_date": "2026-11-10",
+      "end_date": "2026-11-25",
+      "accumulated_study_time": 0,
+      "status": "not_started"
+    },
+    {
+      "id": 9,
+      "title": "Erstellung eines Exposés.",
+      "description": null,
+      "lernziel_id": 3,
+      "start_date": "2026-11-10",
+      "end_date": "2026-11-25",
+      "accumulated_study_time": 0,
+      "status": "not_started"
+    },
+    {
+      "id": 10,
+      "title": "Durchführung der Forschung.",
+      "description": null,
+      "lernziel_id": 3,
+      "start_date": "2026-11-10",
+      "end_date": "2026-11-25",
+      "accumulated_study_time": 0,
+      "status": "not_started"
+    },
+    {
+      "id": 11,
+      "title": "Analyse und Interpretation der Ergebnisse.",
+      "description": null,
+      "lernziel_id": 3,
+      "start_date": "2026-11-10",
+      "end_date": "2026-11-25",
+      "accumulated_study_time": 0,
+      "status": "not_started"
+    },
+    {
+      "id": 12,
+      "title": "Abschlussbericht und Präsentation.",
+      "description": null,
+      "lernziel_id": 3,
       "start_date": "2026-11-10",
       "end_date": "2026-11-25",
       "accumulated_study_time": 0,
@@ -55,14 +163,27 @@
   ],
   "lernzeiten": [
     {
-      "lernziel_id": 1,
-      "date": "2026-11-01",
-      "duration": 60
+      "lernziel_id": 2,
+      "planned_start_time": "2026-11-01T09:00:00Z",
+      "planned_end_time": "2026-11-01T10:00:00Z",
+      "duration": 0,
+      "status": "geplant"
     },
     {
-      "lernziel_id": 1,
-      "date": "2026-11-02",
-      "duration": 60
+      "lernziel_id": 2,
+      "planned_start_time": "2026-11-02T09:00:00Z",
+      "planned_end_time": "2026-11-02T10:00:00Z",
+      "actual_start_time": "2026-11-02T09:05:00Z",
+      "actual_end_time": "2026-11-02T10:00:00Z",
+      "duration": 55,
+      "status": "abgeschlossen"
+    },
+    {
+      "zwischenziel_id": 3,
+      "planned_start_time": "2026-11-03T13:00:00Z",
+      "planned_end_time": "2026-11-03T14:00:00Z",
+      "duration": 0,
+      "status": "geplant"
     }
   ]
 }

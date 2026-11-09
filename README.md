@@ -82,6 +82,8 @@ erDiagram
         TEXT title
         TEXT description
         TEXT module_id
+        TEXT exam_type
+        INTEGER ects
         TEXT start_date
         TEXT end_date
         INTEGER accumulated_study_time
@@ -103,8 +105,12 @@ erDiagram
         INTEGER id PK
         INTEGER lernziel_id FK
         INTEGER zwischenziel_id FK
-        TEXT date
+        TEXT planned_start_time
+        TEXT planned_end_time
+        TEXT actual_start_time
+        TEXT actual_end_time
         INTEGER duration
+        INTEGER status
     }
 ```
 

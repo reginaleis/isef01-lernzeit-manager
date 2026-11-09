@@ -13,11 +13,11 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.orm import DeclarativeBase
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./isef01.db")
+DATABASE_URL = os.getenv("DATABASE_URL", "./isef01.db")
 
 logger = logging.getLogger(__name__)
 
-engine = create_async_engine(DATABASE_URL, echo=False)
+engine = create_async_engine(f"sqlite+aiosqlite:///{DATABASE_URL}", echo=False)
 session_factory = async_sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
 CURRENT_SCHEMA_VERSION = 1
 

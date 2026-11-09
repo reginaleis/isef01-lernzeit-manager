@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Halbjahresplanung | Lernzeit-Manager</title>
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+          integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+          crossorigin="anonymous">
+    <style>
+        body { background-color: #F5F5F5; }
+        .sidebar { background-color: #BDBDBD; }
+        .zeitplan { min-width: 680px; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row min-vh-100">
+            <aside class="sidebar col-md-3 col-xl-2 p-3">
+                <p>Lernzeit Manager</p>
+                <nav class="nav flex-column gap-1" aria-label="Seitenauswahl">
+                    <span class="nav-link text-secondary">Übersicht</span>
+                    <span class="nav-link text-secondary"> Lernziele</span>
+                    <a class="nav-link rounded bg-white text-success fw-bold"
+                       href="#inhalt" aria-current="page">Halbjahresplan</a>
+                    <span class="nav-link text-secondary">Monatsplan</span>
+                    <span class="nav-link text-secondary">Lernzeit</span>
+                    <span class="nav-link text-secondary">Auswertung</span>
+                    <span class="nav-link text-secondary">Erinnerungen</span>
+                </nav>
+            </aside>
+
+            <main id="inhalt" class="col-md-9 col-xl-10 p-3 p-lg-4">
+                <header class="mb-4">
+                    <p class="small text-success fw-semibold mb-1">GROBE SEMESTERPLANUNG</p>
+                    <h1>Dein Halbjahresplan</h1>
+                    <p>Behalte deine Lernziele im Blick und plane deine verfügbare Zeit pro Woche.</p>
+                </header>
+
+                <section class="card mb-4" aria-labelledby="lernziele-titel">
+                    <div class="card-body">
+                        <h2 id="lernziele-titel" class="h5">Lernziele im Halbjahr</h2>
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            <button type="button" class="btn        btn-outline-success">Quartale</button>
+                            <button type="button" class="btn btn-success">Monate</button>
+                            <button type="button" class="btn btn-outline-success">Wochen</button>
+                            <button type="button" class="btn btn-success ms-auto"> Lernziele bearbeiten</button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table zeitplan">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Lernziel / Modul</th>
+                                        <th scope="col">Nov. 26</th>
+                                        <th scope="col">Dez. 26</th>
+                                        <th scope="col">Jan. 27</th>
+                                        <th scope="col">Feb. 27</th>
+                                        <th scope="col">März. 27</th>
+                                        <th scope="col">Apr. 27</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="lernziel-liste">
+                                    <tr>
+                                        <th scope="row">Seminar  bestehen<br><small>ISSE01/ 5 ECTS</small></th>
+                                        <td class="table-success">wird BEARBEITET</td>
+                                        <td class="table-success"></td>
+                                        <td class="table-success"></td>
+                                        <td class="table-success"></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Projektbericht abschließen<br><small>ISEF01/ 5 ECTS</small></th>
+                                        <td class="table-success">wird BEARBEITET</td>
+                                        <td class="table-success"></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                     <tr>
+                                        <th scope="row">Bachalorarbeit abschließen<br><small>BACHALOR/ 10 5ECTS</small></th>
+                                        <td></td>
+                                        <td class="table-info">Nicht ANGEFANGEN</td>
+                                        <td class="table-info"></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+</body>
+</html>

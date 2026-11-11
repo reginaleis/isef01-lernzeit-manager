@@ -117,4 +117,27 @@ erDiagram
 
 ### Tests
 
-tbd
+## Tests
+
+Die automatisierten API-Tests werden mit pytest ausgeführt.
+
+### Entwicklungsabhängigkeiten installieren
+
+```bash
+uv sync --group dev
+```
+
+### Alle Tests ausführen
+
+```bash
+uv run pytest -v
+```
+
+### Einzelne Testdatei ausführen
+
+```bash
+uv run pytest tests/test_lernziele.py -v
+```
+
+Die API-Tests verwenden eine separate SQLite-Testdatenbank
+(`.venv/test_isef01.db`), die vor jedem Test zurückgesetzt wird.

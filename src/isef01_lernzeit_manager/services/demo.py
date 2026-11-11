@@ -22,7 +22,7 @@ class DemoService:
 
     async def reset_data(self) -> None:
         """Alle gespeicherten Daten löschen und mit Demo-Daten überschreiben."""
-        logger.info("Resetting database with demo data")
+        logger.debug("Resetting database with demo data")
         demo_data = self._load_demo_data()
 
         async with self.session.begin():
@@ -39,7 +39,7 @@ class DemoService:
             await self.session.flush()
 
             self.session.add_all(Lernzeiten(**record) for record in demo_data["lernzeiten"])
-        logger.info("Database reset with demo data")
+        logger.debug("Database reset with demo data")
 
     @staticmethod
     def _load_demo_data() -> dict[str, list[dict[str, Any]]]:

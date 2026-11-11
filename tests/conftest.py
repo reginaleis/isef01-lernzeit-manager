@@ -11,9 +11,7 @@ import pytest
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 TEST_DB = PROJECT_ROOT / ".venv" / "test_isef01.db"
 
-os.environ["DATABASE_URL"] = (
-    f"sqlite+aiosqlite:///{TEST_DB.as_posix()}"
-)
+os.environ["DATABASE_URL"] = str(TEST_DB)
 
 from isef01_lernzeit_manager.main import app  # noqa: E402
 from isef01_lernzeit_manager.persistence.database import (  # noqa: E402

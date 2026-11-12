@@ -49,7 +49,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
 app = FastAPI(lifespan=lifespan, title="ISEF01 Lernzeit Manager", version="0.1.0")
 PACKAGE_DIR = Path(__file__).resolve().parent
-TEMPLATE_FILE = PACKAGE_DIR / "templates" / "lernziele.html"
 STATIC_DIR = PACKAGE_DIR / "static"
 
 
@@ -120,9 +119,7 @@ app.include_router(notifications_router)
 
 @app.get("/")
 def read_root() -> HTMLResponse:
-    page = TEMPLATE_FILE.read_text()
-    content = "<main><h1>Hello, World!</h1></main>"
-    return HTMLResponse(page.replace("  <!-- FastAPI inserts the application content here. -->", content))
+    return HTMLResponse((PACKAGE_DIR / "templates" / "index.html").read_text(encoding="utf-8"))
 
 
 @app.get("/lernziele.html")

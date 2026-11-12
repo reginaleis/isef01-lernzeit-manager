@@ -29,8 +29,12 @@ function navigationErstellen() {
     }
 
     const titel = document.createElement("p");
-    titel.className = "navbar-brand mb-0";
-    titel.textContent = "Lernzeit Manager";
+    titel.className = "navbar-logo mb-0";
+    const lernzeit = document.createElement("span");
+    lernzeit.textContent = "Lernzeit";
+    const manager = document.createElement("span");
+    manager.textContent = "Manager";
+    titel.append(lernzeit, manager);
     const nav = document.createElement("nav");
     nav.className = "nav flex-row flex-wrap gap-1";
     nav.setAttribute("aria-label", "Seitenauswahl");

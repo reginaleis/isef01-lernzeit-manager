@@ -25,6 +25,9 @@
                     <a class="nav-link text-dark" href="/auswertung.html">Auswertung</a>
                     <a class="nav-link text-dark" href="/erinnerungen.html">Erinnerungen</a>
                 </nav>
+                <button type="button" class="btn btn-outline-success" onclick="demoDatenWiederherstellen(this)">
+                    Demo Daten wiederherstellen
+                </button>
             </aside>
             <main id="app" class="col-md-9 col-xl-10 p-3 p-lg-4" v-cloak>
                 <header class="mb-4">
@@ -165,7 +168,7 @@
                     beginn: montag < beginn ? beginn : montag,
                     ende: sonntag > ende ? ende : sonntag,
                 });
-                tag.setDate(tag.getDate() + 1); 
+                tag.setDate(tag.getDate() + 1);
             }
             return spalten;
         }
@@ -183,7 +186,7 @@
             return 10;
         }
         function gemeinsameTage(vonA, bisA, vonB, bisB) {
-            const von = vonA > vonB ? vonA : vonB; 
+            const von = vonA > vonB ? vonA : vonB;
             const bis = bisA < bisB ? bisA : bisB;
             if (bis < von) {
                 return 0;
@@ -215,7 +218,7 @@
                     farben: BALKEN_FARBE,
                     stundenProEcts: STUNDEN_PRO_ECTS,
                 };
-            }, 
+            },
             computed: {
                 spalten() {
                     if (this.ansicht === "wochen") {

@@ -235,7 +235,18 @@
                 },
             },
             mounted() {
-                this.laden();
+                this.laden().then(() => {
+                    const bearbeitenId = Number(new URLSearchParams(window.location.search).get("bearbeiten"));
+                    if (!bearbeitenId || this.fehler) {
+                        return;
+                    }
+                    const ziel = this.lernziele.find(element => element.id === bearbeitenId);
+                    if (ziel) {
+                        this.bearbeiten(ziel);
+                    } else {
+                        this.fehler = "Das ausgewählte Lernziel wurde nicht gefunden.";
+                    }
+                });
             },
         });
         app.mount("#app");

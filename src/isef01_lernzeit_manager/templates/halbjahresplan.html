@@ -11,25 +11,10 @@
     <title>Lernzeit Manager</title>
 </head>
 <body>
+    <header class="topbar p-3"></header>
     <div class="container-fluid">
         <div class="row min-vh-100">
-            <aside class="sidebar col-md-3 col-xl-2 p-3">
-                <p>Lernzeit Manager</p>
-                <nav class="nav flex-column gap-1" aria-label="Seitenauswahl">
-                    <a class="nav-link text-dark" href="/">Übersicht</a>
-                    <a class="nav-link text-dark" href="/lernziele.html">Lernziele</a>
-                    <a class="nav-link rounded bg-white text-success fw-bold"
-                       href="/halbjahresplan.html" aria-current="page">Halbjahresplan</a>
-                    <a class="nav-link text-dark" href="/monatsplan.html">Monatsplan</a>
-                    <a class="nav-link text-dark" href="/lernzeit.html">Lernzeit</a>
-                    <a class="nav-link text-dark" href="/auswertung.html">Auswertung</a>
-                    <a class="nav-link text-dark" href="/erinnerungen.html">Erinnerungen</a>
-                </nav>
-                <button type="button" class="btn btn-outline-success" onclick="demoDatenWiederherstellen(this)">
-                    Demo Daten wiederherstellen
-                </button>
-            </aside>
-            <main id="app" class="col-md-9 col-xl-10 p-3 p-lg-4" v-cloak>
+            <main id="app" class="col-12 p-3 p-lg-4" v-cloak>
                 <header class="mb-4">
                     <p class="small text-success fw-semibold mb-1">GROBE SEMESTERPLANUNG</p>
                     <h1>Semesterplan</h1>

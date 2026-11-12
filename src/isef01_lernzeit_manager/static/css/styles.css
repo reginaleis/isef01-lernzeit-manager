@@ -32,3 +32,24 @@ p {
   margin: 0;
   font-size: 1.125rem;
 }
+body {
+  display: block;
+}
+.sidebar {
+  background-color: #bdbdbd;
+} 
+main[v-cloak] > * {
+  display: none !important;
+}
+[v-cloak]::before {
+  content: "Seite wird geladen";
+}
+.status-auswahl {
+  min-width: 13rem;
+}
+.zeitplan {
+  min-width: 680px;
+}
+.zeitplan th:first-child {
+  min-width: 15rem;
+}

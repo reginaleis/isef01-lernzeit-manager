@@ -5,6 +5,50 @@ const STATUS_TEXT = {
     overdue: "Überfällig",
 };
 const STUNDEN_PRO_ECTS = 30;
+const NAVIGATION = [
+    ["/", "Übersicht"],
+    ["/lernziele.html", "Lernziele"],
+    ["/halbjahresplan.html", "Halbjahresplan"],
+    ["/monatsplan.html", "Monatsplan"],
+    ["/lernzeit.html", "Lernzeit"],
+    ["/auswertung.html", "Auswertung"],
+    ["/erinnerungen.html", "Erinnerungen"],
+];
+
+function navigationErstellen() {
+    const sidebar = document.querySelector(".sidebar");
+    if (!sidebar) {
+        return;
+    }
+
+    const titel = document.createElement("p");
+    titel.textContent = "Lernzeit Manager";
+    const nav = document.createElement("nav");
+    nav.className = "nav flex-column gap-1";
+    nav.setAttribute("aria-label", "Seitenauswahl");
+
+    for (const [pfad, name] of NAVIGATION) {
+        const link = document.createElement("a");
+        link.href = pfad;
+        link.textContent = name;
+        const aktiv = window.location.pathname === pfad;
+        link.className = aktiv
+            ? "nav-link rounded bg-white text-success fw-bold"
+            : "nav-link text-dark";
+        if (aktiv) {
+            link.setAttribute("aria-current", "page");
+        }
+        nav.append(link);
+    }
+
+    const resetButton = document.createElement("button");
+    resetButton.type = "button";
+    resetButton.className = "btn btn-outline-success mt-3";
+    resetButton.textContent = "Demo Daten wiederherstellen";
+    resetButton.addEventListener("click", () => demoDatenWiederherstellen(resetButton));
+    sidebar.replaceChildren(titel, nav, resetButton);
+}
+
 async function api(methode, pfad, daten) {
     if (location.protocol === "file:") {
         throw new Error("Öffne die Seite neu");
@@ -96,3 +140,5 @@ async function demoDatenWiederherstellen(button) {
         button.disabled = false;
     }
 }
+
+navigationErstellen();

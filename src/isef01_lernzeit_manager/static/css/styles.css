@@ -36,8 +36,14 @@ body {
   display: block;
 }
 .sidebar {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
   background-color: #bdbdbd;
-} 
+}
+.sidebar .nav {
+  overflow-x: auto;
+}
 main[v-cloak] > * {
   display: none !important;
 }

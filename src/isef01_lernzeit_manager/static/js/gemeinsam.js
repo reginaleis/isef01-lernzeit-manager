@@ -4,6 +4,7 @@ const STATUS_TEXT = {
     completed: "Abgeschlossen",
     overdue: "Überfällig",
 };
+const LERNZIEL_STATUS_SORTIERUNG = ["overdue", "in_progress", "not_started", "completed"];
 const STUNDEN_PRO_ECTS = 30;
 const NAVIGATION = [
     ["/", "Übersicht"],
@@ -11,9 +12,15 @@ const NAVIGATION = [
     ["/halbjahresplan.html", "Halbjahresplan"],
     ["/monatsplan.html", "Monatsplan"],
     ["/lernzeit.html", "Lernzeit"],
-    ["/auswertung.html", "Auswertung"],
-    ["/erinnerungen.html", "Erinnerungen"],
 ];
+
+function lernzieleSortieren(lernziele) {
+    return [...lernziele].sort(
+        (erstes, zweites) =>
+            LERNZIEL_STATUS_SORTIERUNG.indexOf(erstes.status)
+            - LERNZIEL_STATUS_SORTIERUNG.indexOf(zweites.status),
+    );
+}
 
 function navigationErstellen() {
     const topbar = document.querySelector(".topbar");
@@ -22,8 +29,12 @@ function navigationErstellen() {
     }
 
     const titel = document.createElement("p");
-    titel.className = "navbar-brand mb-0";
-    titel.textContent = "Lernzeit Manager";
+    titel.className = "navbar-logo mb-0";
+    const lernzeit = document.createElement("span");
+    lernzeit.textContent = "Lernzeit";
+    const manager = document.createElement("span");
+    manager.textContent = "Manager";
+    titel.append(lernzeit, manager);
     const nav = document.createElement("nav");
     nav.className = "nav flex-row flex-wrap gap-1";
     nav.setAttribute("aria-label", "Seitenauswahl");

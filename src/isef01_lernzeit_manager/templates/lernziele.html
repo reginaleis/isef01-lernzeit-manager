@@ -168,7 +168,7 @@
 
                 async laden() {
                     try {
-                        this.lernziele = await api("GET", "/api/lernziele/");
+                        this.lernziele = lernzieleSortieren(await api("GET", "/api/lernziele/"));
                     } catch (error) {
                         this.fehler = error.message;
                     }

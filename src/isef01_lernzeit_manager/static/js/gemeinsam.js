@@ -16,15 +16,16 @@ const NAVIGATION = [
 ];
 
 function navigationErstellen() {
-    const sidebar = document.querySelector(".sidebar");
-    if (!sidebar) {
+    const topbar = document.querySelector(".topbar");
+    if (!topbar) {
         return;
     }
 
     const titel = document.createElement("p");
+    titel.className = "navbar-brand mb-0";
     titel.textContent = "Lernzeit Manager";
     const nav = document.createElement("nav");
-    nav.className = "nav flex-column gap-1";
+    nav.className = "nav flex-row flex-wrap gap-1";
     nav.setAttribute("aria-label", "Seitenauswahl");
 
     for (const [pfad, name] of NAVIGATION) {
@@ -43,10 +44,10 @@ function navigationErstellen() {
 
     const resetButton = document.createElement("button");
     resetButton.type = "button";
-    resetButton.className = "btn btn-outline-success mt-3";
+    resetButton.className = "btn btn-outline-success ms-lg-auto";
     resetButton.textContent = "Demo Daten wiederherstellen";
     resetButton.addEventListener("click", () => demoDatenWiederherstellen(resetButton));
-    sidebar.replaceChildren(titel, nav, resetButton);
+    topbar.replaceChildren(titel, nav, resetButton);
 }
 
 async function api(methode, pfad, daten) {

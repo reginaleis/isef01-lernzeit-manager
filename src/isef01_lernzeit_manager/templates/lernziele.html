@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+          integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+          crossorigin="anonymous">
+    <title>Lernzeit Manager</title>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row min-vh-100">
+            <aside class="sidebar col-md-3 col-xl-2 p-3">
+                <p>Lernzeit Manager</p>
+                <nav class="nav flex-column gap-1" aria-label="Seitenauswahl">
+                    <a class="nav-link text-dark" href="/">Übersicht</a>
+                    <a class="nav-link rounded bg-white text-success fw-bold"
+                       href="/lernziele.html" aria-current="page">Lernziele</a>
+                    <a class="nav-link text-dark" href="/halbjahresplan.html">Halbjahresplan</a>
+                    <a class="nav-link text-dark" href="/monatsplan.html">Monatsplan</a>
+                    <a class="nav-link text-dark" href="/lernziele.html">Lernziele</a>
+                    <a class="nav-link text-dark" href="/auswertung.html">Auswertung</a>
+                    <a class="nav-link text-dark" href="/erinnerungen.html">Erinnerungen</a>
+                </nav>
+            </aside>
+            <main id="app" class="col-md-9 col-xl-10 p-3 p-lg-4" v-cloak>
+                <header class="mb-4">
+                    <p class="small text-success fw-semibold mb-1">ZIELE FÜR DAS HALBJAHR</p>
+                    <h1>Lernziele</h1>
+                    <p>Lege das fest, was du dieses Semester schaffen möchtest.</p>
+                </header>
+                <div v-if="fehler" class="alert alert-danger sticky-top" role="alert">{{ fehler }}</div>
+                <section class="card mb-4" aria-labelledby="formular-titel">
+                    <div class="card-body">
+                        <h2 id="formular-titel" class="h5">
+                            {{ bearbeiteId ? "Lernziel bearbeiten" : "Neues Lernziel anlegen" }}
+                        </h2>
+                        <form class="row g-3" @submit.prevent="speichern">
+                            <div class="col-md-6">
+                                <label for="titel" class="form-label">Titel des Lernziels</label>
+                                <input id="titel" type="text" class="form-control" v-model="formular.title" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="modul" class="form-label">Modul</label>
+                                <input id="modul" type="text" class="form-control" placeholder="z. B. ISEF01"
+                                       v-model="formular.module_id" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="ects" class="form-label">ECTS</label>
+                                <input id="ects" type="number" min="0" class="form-control" v-model="formular.ects">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="pruefungsart" class="form-label">Prüfungsart</label>
+                                <select id="pruefungsart" class="form-select" v-model="formular.exam_type">
+                                    <option value="">Bitte auswählen</option>
+                                    <option v-for="art in pruefungsarten" :key="art">{{ art }}</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="beginn" class="form-label">Lernbeginn</label>
+                                <input id="beginn" type="date" class="form-control" v-model="formular.start_date">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="zieldatum" class="form-label">Zieldatum</label>
+                                <input id="zieldatum" type="date" class="form-control"
+                                       v-model="formular.end_date" :min="formular.start_date">
+                            </div>
+                            <div class="col-12">
+                                <label for="beschreibung" class="form-label">Beschreibung</label>
+                                <textarea id="beschreibung" class="form-control" rows="3"
+                                          v-model="formular.description"></textarea>
+                            </div>
+                            <div class="col-12 d-flex gap-2">
+                                <button type="submit" class="btn btn-success">Lernziel speichern</button>
+                                <button v-if="bearbeiteId" type="button" class="btn btn-outline-secondary"
+                                        @click="abbrechen">Abbrechen</button>
+                            </div>
+                        </form>
+                        <p class="text-success mt-3 mb-0" role="status" aria-live="polite">{{ rueckmeldung }}</p>
+                    </div>
+                </section>
+
+                <section class="card" aria-labelledby="liste-titel">
+                    <div class="card-body">
+                        <h2 id="liste-titel" class="h5">Lernziele einsehen</h2>
+
+                        <p v-if="lernziele.length === 0" class="text-secondary mb-0">
+                            ES wurden noch keine Lernziele angelegt!
+                        </p>
+                        <div v-else class="table-responsive">
+                            <table class="table align-middle">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Lernziel</th>
+                                        <th scope="col">Modul</th>
+                                        <th scope="col">Anfangsdatum</th>
+                                        <th scope="col">Zieldatum</th>
+                                        <th scope="col">Gelernt</th>
+                                        <th scope="col">Aktion</th>
+                                        <th scope="col">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="ziel in lernziele" :key="ziel.id">
+                                        <td>
+                                            {{ ziel.title }}
+                                            <br><small class="text-secondary">{{ ziel.exam_type }}</small>
+                                        </td>
+                                        <td>{{ ziel.module_id }}</td>
+                                        <td>{{ datumText(ziel.start_date) }}</td>
+                                        <td>{{ datumText(ziel.end_date) }}</td>
+                                        <td class="text-nowrap">{{ minutenText(ziel.accumulated_study_time) }}</td>
+                                        <td>
+                                            <select class="form-select form-select-sm status-auswahl" v-model="ziel.status"
+                                                    @change="statusSpeichern(ziel)"
+                                                    :aria-label="'Status von ' + ziel.title">
+                                                <option v-for="(text, wert) in statusTexte" :key="wert" :value="wert">
+                                                    {{ text }}
+                                                </option>
+                                            </select>
+                                            <small v-if="ziel.completed_on" class="text-secondary">
+                                                erreicht am {{ datumText(ziel.completed_on) }}
+                                            </small>
+                                        </td>
+                                        <td class="text-nowrap">
+                                            <button type="button" class="btn btn-sm btn-outline-success me-1"
+                                                    @click="bearbeiten(ziel)">Bearbeiten</button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                                    @click="loeschen(ziel)">Löschen</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.5.22/dist/vue.global.prod.js"></script>
+    <script src="/static/js/gemeinsam.js"></script>
+    <script>
+        function leeresLernziel() {
+            return {
+                title: "",
+                module_id: "",
+                ects: "",
+                exam_type: "",
+                start_date: "",
+                end_date: "",
+                description: "",
+            };
+        }
+        const app = Vue.createApp({
+            data() {
+                return {
+                    lernziele: [],
+                    formular: leeresLernziel(),
+                    bearbeiteId: null,
+                    fehler: "",
+                    rueckmeldung: "",
+                    statusTexte: STATUS_TEXT,
+                    pruefungsarten: [
+                        "Klausur",
+                        "Projektarbeit",
+                        "Seminararbeit",
+                        "Fallstudie",
+                        "Hausarbeit",
+                        "Workbook",
+                        "Thesis",
+                    ],
+                };
+            },
+            methods: {
+                datumText,
+                minutenText,
+
+                async laden() {
+                    try {
+                        this.lernziele = await api("GET", "/api/lernziele/");
+                    } catch (error) {
+                        this.fehler = error.message;
+                    }
+                },
+                async speichern() {
+                    this.fehler = "";
+                    this.rueckmeldung = "";
+                    const daten = leerZuNull(this.formular);
+                    try {
+                        let gespeichert;
+                        if (this.bearbeiteId) {
+                            gespeichert = await api("PUT", "/api/lernziele/" + this.bearbeiteId, daten);
+                        } else {
+                            gespeichert = await api("POST", "/api/lernziele/", daten);
+                        }
+                        this.rueckmeldung = "„" + gespeichert.title + "“ wurde gespeichert.";
+                        this.abbrechen();
+                    } catch (error) {
+                        this.fehler = error.message;
+                    }
+                    await this.laden();
+                },
+                bearbeiten(ziel) {
+                    this.fehler = "";
+                    this.rueckmeldung = "";
+                    this.bearbeiteId = ziel.id;
+                    for (const feld in this.formular) {
+                        this.formular[feld] = ziel[feld] === null ? "" : ziel[feld];
+                    }
+                    document.getElementById("titel").focus();
+                },
+                abbrechen() {
+                    this.bearbeiteId = null;
+                    this.formular = leeresLernziel();
+                },
+                async statusSpeichern(ziel) {
+                    this.fehler = "";
+                    this.rueckmeldung = "";
+                    try {
+                        await api("PUT", "/api/lernziele/" + ziel.id, {
+                            status: ziel.status,
+                            completed_on: ziel.status === "completed" ? heute() : null,
+                        });
+                    } catch (error) {
+                        this.fehler = error.message;
+                    }
+                    await this.laden();
+                },
+                async loeschen(ziel) {
+                    if (!confirm("„" + ziel.title + "“ wirklich löschen?")) {
+                        return;
+                    }
+                    this.fehler = "";
+                    this.rueckmeldung = "";
+                    try {
+                        await api("DELETE", "/api/lernziele/" + ziel.id);
+                        if (ziel.id === this.bearbeiteId) {
+                            this.abbrechen(); 
+                        }
+                    } catch (error) {
+                        this.fehler = error.message;
+                    }
+                    await this.laden();
+                },
+            },
+            mounted() {
+                this.laden();
+            },
+        });
+        app.mount("#app");
+    </script>
+</body>
+</html>

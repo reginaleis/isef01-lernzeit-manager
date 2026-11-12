@@ -36,6 +36,18 @@
       "end_date": "2027-03-31",
       "accumulated_study_time": 0,
       "status": "not_started"
+    },
+    {
+      "id": 4,
+      "title": "Datenbankmodellierung für die Webanwendung",
+      "description": "Entwirf das Datenmodell und dokumentiere die wichtigsten Entscheidungen.",
+      "module_id": "DBAS02",
+      "exam_type": "Klausur",
+      "ects": 5,
+      "start_date": "2026-10-15",
+      "end_date": "2026-11-05",
+      "accumulated_study_time": 95,
+      "status": "overdue"
     }
 
   ],
@@ -159,13 +171,33 @@
       "end_date": "2026-11-25",
       "accumulated_study_time": 0,
       "status": "not_started"
+    },
+    {
+      "id": 13,
+      "title": "ER-Modell erstellen",
+      "description": null,
+      "lernziel_id": 4,
+      "start_date": "2026-10-20",
+      "end_date": "2026-10-30",
+      "accumulated_study_time": 45,
+      "status": "completed"
+    },
+    {
+      "id": 14,
+      "title": "Tabellen normalisieren und dokumentieren",
+      "description": null,
+      "lernziel_id": 4,
+      "start_date": "2026-11-01",
+      "end_date": "2026-11-08",
+      "accumulated_study_time": 0,
+      "status": "overdue"
     }
   ],
   "lernzeiten": [
     {
       "lernziel_id": 2,
-      "planned_start_time": "2026-11-01T09:00:00Z",
-      "planned_end_time": "2026-11-01T10:00:00Z",
+      "planned_start_time": "2026-11-16T09:00:00Z",
+      "planned_end_time": "2026-11-16T10:00:00Z",
       "duration": 0,
       "status": "geplant"
     },
@@ -182,6 +214,31 @@
       "zwischenziel_id": 3,
       "planned_start_time": "2026-11-03T13:00:00Z",
       "planned_end_time": "2026-11-03T14:00:00Z",
+      "duration": 0,
+      "status": "geplant"
+    },
+    {
+      "zwischenziel_id": 13,
+      "planned_start_time": "2026-10-29T14:00:00Z",
+      "planned_end_time": "2026-10-29T15:00:00Z",
+      "actual_start_time": "2026-10-29T14:00:00Z",
+      "actual_end_time": "2026-10-29T14:45:00Z",
+      "duration": 45,
+      "status": "abgeschlossen"
+    },
+    {
+      "lernziel_id": 4,
+      "planned_start_time": "2026-11-02T09:00:00Z",
+      "planned_end_time": "2026-11-02T10:00:00Z",
+      "actual_start_time": "2026-11-02T09:05:00Z",
+      "actual_end_time": "2026-11-02T09:55:00Z",
+      "duration": 50,
+      "status": "abgeschlossen"
+    },
+    {
+      "zwischenziel_id": 14,
+      "planned_start_time": "2026-11-14T13:00:00Z",
+      "planned_end_time": "2026-11-14T14:00:00Z",
       "duration": 0,
       "status": "geplant"
     }

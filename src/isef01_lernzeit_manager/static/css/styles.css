@@ -1,40 +1,3 @@
-* {
-  box-sizing: border-box;
-}
-
-body {
-  display: grid;
-  min-height: 100vh;
-  margin: 0;
-  place-items: center;
-  background: #f4f1ea;
-  color: #18212b;
-  font-family: Georgia, "Times New Roman", serif;
-}
-
-.hello-card {
-  max-width: 34rem;
-  padding: 3rem;
-  border: 2px solid #18212b;
-  border-radius: 0.5rem;
-  background: #ffffff;
-  text-align: center;
-  box-shadow: 0.75rem 0.75rem 0 #ef8354;
-}
-
-h1 {
-  margin: 0 0 0.75rem;
-  font-size: clamp(2.5rem, 8vw, 4.5rem);
-  line-height: 1;
-}
-
-p {
-  margin: 0;
-  font-size: 1.125rem;
-}
-body {
-  display: block;
-}
 .topbar {
   display: flex;
   flex-wrap: wrap;
@@ -47,6 +10,26 @@ body {
 }
 .topbar .nav {
   flex: 1 1 auto;
+}
+.navbar-logo, .status-diagramm-mitte strong {
+  color: #18212b;
+}
+.navbar-logo, .overview-status-willkommen {
+  font-weight: 700;
+}
+.navbar-logo {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  margin-right: 0.75rem;
+  padding-right: 1.75rem;
+  border-right: 1px solid #888;
+  font-size: 1.25rem;
+  line-height: 1.05;
+  white-space: nowrap;
+}
+.navbar-logo span:first-child, .overview-status--gut .overview-status-hinweis, .motivationsbotschaft {
+  color: #276344;
 }
 main[v-cloak] > * {
   display: none !important;
@@ -62,4 +45,221 @@ main[v-cloak] > * {
 }
 .zeitplan th:first-child {
   min-width: 15rem;
+}
+.overview {
+  max-width: 1600px;
+  margin: 0 auto;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.overview-kopf {
+  background: linear-gradient(120deg, #e8f4ec, #f8faf8);
+}
+.overview-kopf-inhalt {
+  gap: 2rem;
+}
+.overview-status {
+  flex: 0 1 32rem;
+  border: 1px solid #d5e5da;
+  border-radius: 0.75rem;
+}
+.overview-status-hinweis, .status-abzeichen {
+  font-weight: 600;
+}
+.overview-status--warnung {
+  border-color: #efc5a1;
+  background: #fff8f1;
+}
+.overview-status--warnung .overview-status-hinweis {
+  color: #8d2929;
+}
+.status--overdue {
+  color: #8d2929;
+  background: #fceaea;
+}
+.overview-status-willkommen {
+  font-size: 1.05rem;
+}
+.overview-card {
+  border: 1px solid #e3e9e5;
+  border-radius: 0.9rem;
+  box-shadow: 0 0.25rem 1rem rgb(24 33 43 / 5%);
+}
+.offene-lernziele-scroll {
+  max-height: 41rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+.offene-lernziel-karte {
+  height: 20rem;
+}
+.offene-lernziel-karte .card-body {
+  min-height: 0;
+}
+.offene-lernziel-beschreibung {
+  max-height: 2.5rem;
+  overflow-y: auto;
+}
+.offene-lernziel-karte .zwischenziel-liste {
+  max-height: 7rem;
+  min-height: 0;
+  overflow-y: auto;
+}
+.status-uebersicht {
+  gap: clamp(1.5rem, 5vw, 3.5rem);
+}
+.status-diagramm {
+  position: relative;
+  display: grid;
+  width: 12rem;
+  aspect-ratio: 1;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  isolation: isolate;
+}
+.status-diagramm-segmente {
+  overflow: visible;
+}
+.status-diagramm-segmente circle {
+  cursor: help;
+}
+.status-diagramm-segmente circle:hover,
+.status-diagramm-segmente circle:focus-visible {
+  filter: brightness(0.82);
+}
+.status-tooltip {
+  position: absolute;
+  z-index: 2;
+  top: -0.3rem;
+  left: 50%;
+  padding: 0.4rem 0.7rem;
+  transform: translate(-50%, -100%);
+  border-radius: 0.4rem;
+  background: #18212b;
+  color: #fff;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.status-diagramm-mitte {
+  z-index: 1;
+  width: 68%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #fff;
+}
+.status-diagramm-mitte strong {
+  font-size: 2rem;
+  line-height: 1.1;
+}
+.status-diagramm-mitte span {
+  color: #66717c;
+}
+.status-tooltip, .status-diagramm-mitte span {
+  font-size: 0.85rem;
+}
+.lernfortschritt-balken {
+  height: 0.9rem;
+}
+.lernzeit-erinnerung {
+  flex: 1 1 18rem;
+}
+.status-abzeichen {
+  font-size: 0.8rem;
+}
+.status--not_started {
+  color: #46515c;
+  background: #f1f3f5;
+}
+.status--in_progress {
+  color: #145782;
+  background: #e8f4fc;
+}
+.status--completed {
+  color: #21613f;
+  background: #e7f4eb;
+}
+.lernziel-naechster-schritt {
+  background: #f1f3f5;
+}
+.zwischenziel-zeile {
+  min-height: 1.8rem;
+}
+.zwischenziel-zeile .form-check-input {
+  width: 0.9rem;
+  height: 0.9rem;
+  margin: 0;
+  flex: 0 0 auto;
+}
+.status--not_started .form-check-input {
+  accent-color: #9aa4ae;
+}
+.status--in_progress .form-check-input {
+  accent-color: #2878b5;
+}
+.status--completed .form-check-input {
+  accent-color: #2f855a;
+}
+.status--overdue .form-check-input {
+  accent-color: #c74646;
+}
+.zwischenziel-titel {
+  flex: 1;
+}
+.zwischenziel-zeile .small {
+  font-size: 0.72rem;
+}
+.abschluss-details {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+.abschluss-details div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+.abschluss-details dd {
+  margin: 0;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+.abgeschlossene-lernziele-scroll {
+  max-height: 49rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+.abgeschlossene-karte {
+  height: 9rem;
+  border-top: 3px solid #2f855a;
+}
+@media (max-width: 575.98px) {
+  .status-diagramm {
+    width: 10rem;
+  }
+}
+@media (max-width: 767.98px) {
+  .overview-kopf-inhalt {
+    gap: 1rem;
+  }
+  .overview-status {
+    flex-basis: auto;
+  }
+  .abgeschlossene-lernziele-scroll {
+    max-height: 59rem;
+  }
+  .abgeschlossene-karte {
+    height: 11rem;
+  }
+  .abschluss-details {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 1199.98px) {
+  .offene-lernziele-scroll {
+    max-height: 83rem;
+  }
 }

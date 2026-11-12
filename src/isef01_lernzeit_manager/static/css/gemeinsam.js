@@ -1,0 +1,87 @@
+const STATUS_TEXT = {
+    not_started: "Noch nicht begonnen",
+    in_progress: "In Bearbeitung",
+    completed: "Abgeschlossen",
+    overdue: "Überfällig",
+};
+const STUNDEN_PRO_ECTS = 30;
+async function api(methode, pfad, daten) {
+    if (location.protocol === "file:") {
+        throw new Error("Öffne die Seite neu");
+    }
+    const optionen = { method: methode };
+    if (daten !== undefined) {
+        optionen.headers = { "Content-Type": "application/json" };
+        optionen.body = JSON.stringify(daten);
+    } 
+    let antwort;
+    try {
+        antwort = await fetch(pfad, optionen);
+    } catch (error) {
+        throw new Error(
+            "Backend nicht erreicht!",
+        );
+    }
+    if (!antwort.ok) {
+        throw new Error(await fehlerText(antwort));
+    }
+    if (antwort.status === 204) {
+        return null;
+    }
+    try {
+        return await antwort.json();
+    } catch (error) {
+        throw new Error("Keine lesbare .JSON!");
+    }
+}
+async function fehlerText(antwort) {
+    const allgemein = "Das hat leider nicht geklappt (Fehler " + antwort.status + ").";
+    if (antwort.status === 422) {
+        return "Eingaben Prüfen!";
+    }
+    try {
+        const inhalt = await antwort.json();
+        return typeof inhalt.detail === "string" ? inhalt.detail : allgemein;
+    } catch (error) {
+        return allgemein;
+    }
+}
+function leerZuNull(daten) {
+    const ergebnis = {};
+    for (const feld in daten) {
+        ergebnis[feld] = daten[feld] === "" ? null : daten[feld];
+    }
+    return ergebnis;
+}
+function isoDatum(datum) {
+    const monat = String(datum.getMonth() + 1).padStart(2, "0");
+    const tag = String(datum.getDate()).padStart(2, "0");
+    return datum.getFullYear() + "-" + monat + "-" + tag;
+}
+function heute() {
+    return isoDatum(new Date());
+}
+function datumText(isoText) {
+    if (!isoText) {
+        return "–";
+    }
+    const teile = isoText.split("-");
+    return teile[2] + "." + teile[1] + "." + teile[0];
+}
+function tageZwischen(von, bis) {
+    if (!von || !bis || bis < von) {
+        return 0;
+    }
+    const beginn = new Date(von + "T00:00:00Z");
+    const ende = new Date(bis + "T00:00:00Z");
+    const einTag = 24 * 60 * 60 * 1000;
+    return Math.round((ende - beginn) / einTag) + 1;
+}
+function minutenText(minuten) {
+    const stunden = Math.floor(minuten / 60);
+    const rest = minuten % 60;
+    if (stunden === 0) {
+        return rest + " min";
+    }
+    return stunden + " h " + rest + " min";
+}

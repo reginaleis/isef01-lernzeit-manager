@@ -13,7 +13,7 @@ async function api(methode, pfad, daten) {
     if (daten !== undefined) {
         optionen.headers = { "Content-Type": "application/json" };
         optionen.body = JSON.stringify(daten);
-    } 
+    }
     let antwort;
     try {
         antwort = await fetch(pfad, optionen);
@@ -84,4 +84,15 @@ function minutenText(minuten) {
         return rest + " min";
     }
     return stunden + " h " + rest + " min";
+}
+
+async function demoDatenWiederherstellen(button) {
+    button.disabled = true;
+    try {
+        await api("POST", "/api/demo/resetdata");
+        window.location.reload();
+    } catch (error) {
+        alert(error.message);
+        button.disabled = false;
+    }
 }

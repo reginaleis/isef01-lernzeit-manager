@@ -35,14 +35,18 @@ p {
 body {
   display: block;
 }
-.sidebar {
+.topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
   position: sticky;
   top: 0;
   z-index: 1030;
   background-color: #bdbdbd;
 }
-.sidebar .nav {
-  overflow-x: auto;
+.topbar .nav {
+  flex: 1 1 auto;
 }
 main[v-cloak] > * {
   display: none !important;

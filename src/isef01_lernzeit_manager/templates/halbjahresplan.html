@@ -3,16 +3,12 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Halbjahresplanung | Lernzeit-Manager</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
           integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
           crossorigin="anonymous">
-    <style>
-        body { background-color: #F5F5F5; }
-        .sidebar { background-color: #BDBDBD; }
-        .zeitplan { min-width: 680px; }
-    </style>
+    <title>Lernzeit Manager</title>
 </head>
 <body>
     <div class="container-fluid">
@@ -20,80 +16,300 @@
             <aside class="sidebar col-md-3 col-xl-2 p-3">
                 <p>Lernzeit Manager</p>
                 <nav class="nav flex-column gap-1" aria-label="Seitenauswahl">
-                    <span class="nav-link text-secondary">Übersicht</span>
-                    <span class="nav-link text-secondary"> Lernziele</span>
+                    <a class="nav-link text-dark" href="/">Übersicht</a>
+                    <a class="nav-link text-dark" href="/lernziele.html">Lernziele</a>
                     <a class="nav-link rounded bg-white text-success fw-bold"
-                       href="#inhalt" aria-current="page">Halbjahresplan</a>
-                    <span class="nav-link text-secondary">Monatsplan</span>
-                    <span class="nav-link text-secondary">Lernzeit</span>
-                    <span class="nav-link text-secondary">Auswertung</span>
-                    <span class="nav-link text-secondary">Erinnerungen</span>
+                       href="/halbjahresplan.html" aria-current="page">Halbjahresplan</a>
+                    <a class="nav-link text-dark" href="/monatsplan.html">Monatsplan</a>
+                    <a class="nav-link text-dark" href="/lernzeit.html">Lernzeit</a>
+                    <a class="nav-link text-dark" href="/auswertung.html">Auswertung</a>
+                    <a class="nav-link text-dark" href="/erinnerungen.html">Erinnerungen</a>
                 </nav>
             </aside>
-
-            <main id="inhalt" class="col-md-9 col-xl-10 p-3 p-lg-4">
+            <main id="app" class="col-md-9 col-xl-10 p-3 p-lg-4" v-cloak>
                 <header class="mb-4">
                     <p class="small text-success fw-semibold mb-1">GROBE SEMESTERPLANUNG</p>
-                    <h1>Dein Halbjahresplan</h1>
+                    <h1>Semesterplan</h1>
                     <p>Behalte deine Lernziele im Blick und plane deine verfügbare Zeit pro Woche.</p>
                 </header>
-
-                <section class="card mb-4" aria-labelledby="lernziele-titel">
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                    <button type="button" class="btn btn-outline-success" @click="laden" :disabled="laedt">
+                        Daten aktualisieren
+                    </button>
+                    <span v-if="laedt" role="status">Daten werden geladen …</span>
+                </div>
+                <div v-if="fehler" class="alert alert-danger" role="alert">{{ fehler }}</div>
+                <section v-if="!laedt && !fehler" class="card mb-4" aria-labelledby="lernziele-titel">
                     <div class="card-body">
                         <h2 id="lernziele-titel" class="h5">Lernziele im Halbjahr</h2>
                         <div class="d-flex flex-wrap gap-2 mb-3">
-                            <button type="button" class="btn        btn-outline-success">Quartale</button>
-                            <button type="button" class="btn btn-success">Monate</button>
-                            <button type="button" class="btn btn-outline-success">Wochen</button>
-                            <button type="button" class="btn btn-success ms-auto"> Lernziele bearbeiten</button>
+                            <button v-for="(name, wert) in ansichten" :key="wert" type="button" class="btn"
+                                    :class="ansicht === wert ? 'btn-success' : 'btn-outline-success'"
+                                    :aria-pressed="ansicht === wert" @click="ansicht = wert">{{ name }}</button>
+                            <a class="btn btn-success ms-auto" href="/lernziele.html">Lernziele bearbeiten</a>
                         </div>
-                        <div class="table-responsive">
-                            <table class="table zeitplan">
+                        <p v-if="zeilen.length === 0" class="text-secondary">
+                            Es gibt noch keine Lernziele.
+                        </p>
+                        <div v-else class="table-responsive">
+                            <table class="table zeitplan align-middle">
                                 <thead>
                                     <tr>
                                         <th scope="col">Lernziel / Modul</th>
-                                        <th scope="col">Nov. 26</th>
-                                        <th scope="col">Dez. 26</th>
-                                        <th scope="col">Jan. 27</th>
-                                        <th scope="col">Feb. 27</th>
-                                        <th scope="col">März. 27</th>
-                                        <th scope="col">Apr. 27</th>
+                                        <th v-for="spalte in spalten" :key="spalte.beginn" scope="col" class="text-nowrap">
+                                            {{ spalte.name }}
+                                        </th>
                                     </tr>
                                 </thead>
-                                <tbody id="lernziel-liste">
-                                    <tr>
-                                        <th scope="row">Seminar  bestehen<br><small>ISSE01/ 5 ECTS</small></th>
-                                        <td class="table-success">wird BEARBEITET</td>
-                                        <td class="table-success"></td>
-                                        <td class="table-success"></td>
-                                        <td class="table-success"></td>
-                                        <td></td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <th scope="row">Projektbericht abschließen<br><small>ISEF01/ 5 ECTS</small></th>
-                                        <td class="table-success">wird BEARBEITET</td>
-                                        <td class="table-success"></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                    </tr>
-                                     <tr>
-                                        <th scope="row">Bachalorarbeit abschließen<br><small>BACHALOR/ 10 5ECTS</small></th>
-                                        <td></td>
-                                        <td class="table-info">Nicht ANGEFANGEN</td>
-                                        <td class="table-info"></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                <tbody>
+                                    <tr v-for="ziel in zeilen" :key="ziel.id">
+                                        <th scope="row">
+                                            {{ ziel.title }}
+                                            <br><small>{{ ziel.module_id }}<span v-if="ziel.ects"> / {{ ziel.ects }} ECTS</span></small>
+                                            <br><small>{{ datumText(ziel.start_date) }} – {{ datumText(ziel.end_date) }}</small>
+                                            <br><span class="badge text-dark" :class="farben[ziel.status]">{{ statusTexte[ziel.status] }}</span>
+                                        </th>
+                                        <td v-for="spalte in spalten" :key="spalte.beginn" class="text-nowrap"
+                                            :class="laeuftIn(ziel, spalte) ? farben[ziel.status] : ''">
+                                            <span v-if="stunden(ziel, spalte) > 0">{{ stundenText(stunden(ziel, spalte)) }} h</span>
+                                        </td>
                                     </tr>
                                 </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th scope="row">Geschätzte Zeit</th>
+                                        <td v-for="spalte in spalten" :key="spalte.beginn" class="text-nowrap"
+                                            :class="{ 'text-danger fw-bold': noetig(spalte) > verfuegbar(spalte) }">
+                                            {{ stundenText(noetig(spalte)) }} h
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Verfügbare Lernzeit</th>
+                                        <td v-for="spalte in spalten" :key="spalte.beginn" class="text-nowrap">
+                                            {{ stundenText(verfuegbar(spalte)) }} h
+                                        </td>
+                                    </tr>
+                                </tfoot>
                             </table>
                         </div>
+                        <p v-if="ohneDatum.length > 0" class="small text-secondary">
+                            Lernziele ohne Anfangs- oder Zieldatum fehlen im Plan ({{ ohneDatum.length }}).
+                            Trag die Daten über „Lernziele bearbeiten“ nach.
+                        </p>
+                        <div class="row g-2 align-items-center mt-2">
+                            <div class="col-auto">
+                                <label for="stunden" class="col-form-label">Verfügbare Lernzeit pro Woche in Stunden</label>
+                            </div>
+                            <div class="col-auto">
+                                <input id="stunden" type="number" min="0" step="0.5" class="form-control"
+                                       v-model.number="stundenProWoche" @change="stundenMerken"
+                                       aria-describedby="budget-hinweis">
+                            </div>
+                        </div>
+                        <p id="budget-hinweis" class="small text-secondary mt-2 mb-0">
+                            Der Wert gilt für jede Woche und wird nur im Browser gespeichert.
+                        </p>
+                        <p v-if="budgetMeldung" class="small mt-1 mb-0" role="status">{{ budgetMeldung }}</p>
+
+                        <p class="small text-secondary mt-3 mb-0">
+                            Rechenart: {{ stundenProEcts }} Stunden pro ECTS-Punkt minus die schon gelernte Zeit,
+                            gleichmäßig verteilt bis zum Zieldatum. Rot bedeutet, dass mehr Lernzeit nötig ist, als
+                            verfügbar ist. Lernziele ohne ECTS oder mit abgelaufenem Zieldatum bekommen keine Stunden.
+                        </p>
                     </div>
                 </section>
             </main>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.5.22/dist/vue.global.prod.js"></script>
+    <script src="/static/js/gemeinsam.js"></script>
+    <script>
+        const BALKEN_FARBE = {
+            not_started: "bg-info-subtle",
+            in_progress: "bg-success-subtle",
+            completed: "bg-secondary-subtle",
+            overdue: "bg-danger-subtle",
+        };
+        function monatKurz(datum) {
+            return datum.toLocaleDateString("de-DE", { month: "short", year: "2-digit" });
+        }
+        function monatsSpalten(laenge) {
+            const jetzt = new Date();
+            const spalten = [];
+            for (let i = 0; i < 6; i += laenge) {
+                const erster = new Date(jetzt.getFullYear(), jetzt.getMonth() + i, 1);
+                const letzter = new Date(jetzt.getFullYear(), jetzt.getMonth() + i + laenge, 0);
+                let name = monatKurz(erster);
+                if (laenge > 1) {
+                    name += " – " + monatKurz(letzter);
+                }
+                spalten.push({ name: name, beginn: isoDatum(erster), ende: isoDatum(letzter) });
+            }
+            return spalten;
+        }
+        function wochenSpalten() {
+            const monate = monatsSpalten(1);
+            const beginn = monate[0].beginn;
+            const ende = monate[5].ende;
+            const tag = new Date(beginn + "T12:00:00");
+            tag.setDate(tag.getDate() - ((tag.getDay() + 6) % 7));
+
+            const spalten = [];
+            while (isoDatum(tag) <= ende) {
+                const montag = isoDatum(tag);
+                const name = tag.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" });
+                tag.setDate(tag.getDate() + 6);
+                const sonntag = isoDatum(tag);
+                spalten.push({
+                    name: name,
+                    beginn: montag < beginn ? beginn : montag,
+                    ende: sonntag > ende ? ende : sonntag,
+                });
+                tag.setDate(tag.getDate() + 1); 
+            }
+            return spalten;
+        }
+        function wochenstundenLaden()  {
+            try {
+                const gespeichert = localStorage.getItem("stundenProWoche");
+                if (gespeichert !== null) {
+                    const stunden = Number(gespeichert);
+                    if (Number.isFinite(stunden) && stunden >= 0) {
+                        return stunden;
+                    }
+                }
+            } catch (error )  {
+            }
+            return 10;
+        }
+        function gemeinsameTage(vonA, bisA, vonB, bisB) {
+            const von = vonA > vonB ? vonA : vonB; 
+            const bis = bisA < bisB ? bisA : bisB;
+            if (bis < von) {
+                return 0;
+            }
+            return tageZwischen(von, bis);
+        }
+        function offeneStunden(ziel) {
+            if (ziel.status === "completed" || !ziel.ects) {
+                return 0;
+            }
+            const workload = ziel.ects * STUNDEN_PRO_ECTS;
+            const gelernt = (ziel.accumulated_study_time || 0) / 60;
+            return Math.max(0, workload - gelernt);
+        }
+        function restBeginn(ziel) {
+            return ziel.start_date > heute() ? ziel.start_date : heute();
+        }
+        const app = Vue.createApp({
+            data() {
+                return {
+                    lernziele: [],
+                    ansicht: "monate",
+                    ansichten: { dreiMonate: "3 Monate", monate: "Monate", wochen: "Wochen" },
+                    stundenProWoche: wochenstundenLaden(),
+                    budgetMeldung: "",
+                    fehler: "",
+                    laedt: true,
+                    statusTexte: STATUS_TEXT,
+                    farben: BALKEN_FARBE,
+                    stundenProEcts: STUNDEN_PRO_ECTS,
+                };
+            }, 
+            computed: {
+                spalten() {
+                    if (this.ansicht === "wochen") {
+                        return wochenSpalten();
+                    }
+                    if (this.ansicht === "dreiMonate") {
+                        return monatsSpalten(3);
+                    }
+                    return monatsSpalten(1);
+                },
+                zeilen() {
+                    const beginn = this.spalten[0].beginn;
+                    const ende = this.spalten[this.spalten.length - 1].ende;
+                    return this.lernziele.filter(
+                        (ziel) =>
+                            ziel.start_date &&
+                            ziel.end_date &&
+                            gemeinsameTage(ziel.start_date, ziel.end_date, beginn, ende) > 0,
+                    );
+                },
+                ohneDatum() {
+                    return this.lernziele.filter((ziel) => !ziel.start_date || !ziel.end_date);
+                },
+            },
+            methods: {
+                datumText,
+                    stundenText(stunden) {
+                    return stunden.toLocaleString("de-DE", {
+                        minimumFractionDigits: 1,
+                        maximumFractionDigits: 1,
+                    });
+                },
+                async laden() {
+                    this.laedt = true;
+                    this.fehler = "";
+                    try {
+                        this.lernziele = await api("GET", "/api/lernziele/");
+                    } catch (error) {
+                        this.fehler = error.message;
+                    } finally {
+                        this.laedt = false;
+                    }
+                },
+                laeuftIn(ziel, spalte) {
+                    return gemeinsameTage(ziel.start_date, ziel.end_date, spalte.beginn, spalte.ende) > 0;
+                },
+                stunden(ziel, spalte) {
+                    if (ziel.end_date < heute()) {
+                        return 0;
+                    }
+                    const beginn = restBeginn(ziel);
+                    const restTage = tageZwischen(beginn, ziel.end_date);
+                    if (restTage === 0) {
+                        return 0;
+                    }
+                    const tageInSpalte = gemeinsameTage(beginn, ziel.end_date, spalte.beginn, spalte.ende);
+                    return (offeneStunden(ziel) * tageInSpalte) / restTage;
+                },
+                noetig(spalte) {
+                    let summe = 0;
+                    for (const ziel of this.zeilen) {
+                        summe += this.stunden(ziel, spalte);
+                    }
+                    return summe;
+                },
+                verfuegbar(spalte) {
+                    const budget = Number(this.stundenProWoche);
+                    if (!Number.isFinite(budget) || budget < 0) {
+                        return 0;
+                    }
+                    const tage = gemeinsameTage(heute(), spalte.ende, spalte.beginn, spalte.ende);
+                    return (budget * tage) / 7;
+                },
+
+                stundenMerken() {
+                    const stunden = this.stundenProWoche;
+                    if (!Number.isFinite(stunden) || stunden < 0) {
+                        this.budgetMeldung = "Bitte gib eine Zahl ab 0 ein.";
+                        return;
+                    }
+                    try {
+                        localStorage.setItem("stundenProWoche", stunden);
+                        this.budgetMeldung = "Wochenbudget gespeichert.";
+                    } catch (error) {
+                        this.budgetMeldung =
+                            "Browser erlaubt das Speichern nicht. Der Wert gilt nur bis zum Neuladen.";
+                    }
+                },
+            },
+            mounted() {
+                this.laden();
+            },
+        });
+        app.mount("#app");
+    </script>
 </body>
 </html>

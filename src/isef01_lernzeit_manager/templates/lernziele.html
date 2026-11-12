@@ -21,7 +21,7 @@
                        href="/lernziele.html" aria-current="page">Lernziele</a>
                     <a class="nav-link text-dark" href="/halbjahresplan.html">Halbjahresplan</a>
                     <a class="nav-link text-dark" href="/monatsplan.html">Monatsplan</a>
-                    <a class="nav-link text-dark" href="/lernziele.html">Lernziele</a>
+                    <a class="nav-link text-dark" href="/lernzeit.html">Lernzeit</a>
                     <a class="nav-link text-dark" href="/auswertung.html">Auswertung</a>
                     <a class="nav-link text-dark" href="/erinnerungen.html">Erinnerungen</a>
                 </nav>
@@ -88,7 +88,7 @@
                         <h2 id="liste-titel" class="h5">Lernziele einsehen</h2>
 
                         <p v-if="lernziele.length === 0" class="text-secondary mb-0">
-                            ES wurden noch keine Lernziele angelegt!
+                            Es wurden noch keine Lernziele angelegt!
                         </p>
                         <div v-else class="table-responsive">
                             <table class="table align-middle">
@@ -99,8 +99,8 @@
                                         <th scope="col">Anfangsdatum</th>
                                         <th scope="col">Zieldatum</th>
                                         <th scope="col">Gelernt</th>
-                                        <th scope="col">Aktion</th>
                                         <th scope="col">Status</th>
+                                        <th scope="col">Aktion</th>
                                     </tr>
                                 </thead>
                                 <tbody>

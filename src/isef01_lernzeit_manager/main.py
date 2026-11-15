@@ -132,6 +132,11 @@ def read_halbjahresplan() -> HTMLResponse:
     return HTMLResponse((PACKAGE_DIR / "templates" / "halbjahresplan.html").read_text(encoding="utf-8"))
 
 
+@app.get("/lernzeit.html")
+def read_lernzeit() -> HTMLResponse:
+    return HTMLResponse((PACKAGE_DIR / "templates" / "lernzeit.html").read_text(encoding="utf-8"))
+
+
 @app.get("/api/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}

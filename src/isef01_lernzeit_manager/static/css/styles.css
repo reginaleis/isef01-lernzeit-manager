@@ -263,3 +263,7 @@ main[v-cloak] > * {
     max-height: 83rem;
   }
 }
+.lernblock {
+  border-left: 0.4rem solid #5bb5a9;
+  background: #eef8f6;
+}

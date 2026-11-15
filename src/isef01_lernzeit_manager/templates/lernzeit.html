@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+          integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+          crossorigin="anonymous">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <title>Lernzeit Manager</title>
+</head>
+<body>
+    <header class="topbar p-3"></header>
+    <div class="container-fluid">
+        <div class="row min-vh-100">
+            <main id="app" class="col-12 p-3 p-lg-4" v-cloak>
+                <header class="mb-4">
+                    <p class="small text-success fw-semibold mb-1">LERNRAUM</p>
+                    <h1>Lernzeit</h1>
+                    <p>Starte einen geplanten Lernblock oder eine Lernsession und tracke deine Lernzeit.</p>
+                </header>
+                <div v-if="fehler" class="alert alert-danger" role="alert">{{ fehler }}</div>
+                <div class="row g-4">
+                    <div class="col-lg-7">
+                        <!-- IF Lernsession, steht hier die Uhr. ELSE ist hier das Formular für eine Lernsession. -->
+                        <section v-if="laufend" class="card overview-card mb-4" aria-labelledby="uhr-titel">
+                            <div class="card-body text-center">
+                                <h2 id="uhr-titel" class="h5">Lernsession läuft</h2>
+                                <p class="mb-0">{{ zielName(laufend, lernziele, zwischenziele) }}</p>
+                                <p class="display-2 fw-bold font-monospace mb-0" role="timer">{{ uhrText }}</p>
+                                <p class="text-secondary">{{ fortschrittText }}</p>
+                                <div class="d-flex flex-wrap justify-content-center gap-2">
+                                    <button type="button" class="btn btn-success" @click="beenden"
+                                            :disabled="sekunden < 1">Beenden und speichern</button>
+                                    <button type="button" class="btn btn-outline-danger" @click="verwerfen">Verwerfen</button>
+                                </div>
+                            </div>
+                        </section>
+                        <section v-else class="card overview-card mb-4" aria-labelledby="start-titel">
+                            <div class="card-body">
+                                <h2 id="start-titel" class="h5">Freie Lernsession starten</h2>
+                                <p class="text-secondary">
+                                    Für eine Lernsession ohne Plan. Einen geplanten Lernblock startest du in der Liste daneben.
+                                </p>
+                                <form class="row g-3 align-items-end" @submit.prevent="freiStarten">
+                                    <div class="col-md-5">
+                                        <label for="lernziel" class="form-label">Lernziel</label>
+                                        <select id="lernziel" class="form-select" v-model="auswahl.lernziel_id"
+                                                @change="auswahl.zwischenziel_id = ''" required>
+                                            <option value="">Bitte auswählen</option>
+                                            <option v-for="ziel in offeneLernziele" :key="ziel.id" :value="ziel.id">
+                                                {{ ziel.module_id }}: {{ ziel.title }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="zwischenziel" class="form-label">Zwischenziel (optional)</label>
+                                        <select id="zwischenziel" class="form-select" v-model="auswahl.zwischenziel_id">
+                                            <option value="">Keins</option>
+                                            <option v-for="ziel in zwischenzieleVon(auswahl.lernziel_id)" :key="ziel.id" :value="ziel.id">
+                                                {{ ziel.title }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <button type="submit" class="btn btn-success w-100">Starten</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </section>
+
+                        <section class="card overview-card mb-4" aria-labelledby="nachtrag-titel">
+                            <div class="card-body">
+                                <h2 id="nachtrag-titel" class="h5">Lernzeit nachtragen</h2>
+                                <p class="text-secondary">
+                                    Zeit nicht Getracked? Trage deine lernzeit ein.
+                                </p>
+                                <form class="row g-2 align-items-end" @submit.prevent="nachtragen">
+                                    <div class="col-md-6">
+                                        <label for="nt-lernziel" class="form-label">Lernziel</label>
+                                        <select id="nt-lernziel" class="form-select" v-model="nachtrag.lernziel_id"
+                                                @change="nachtrag.zwischenziel_id = ''" required>
+                                            <option value="">Bitte auswählen</option>
+                                            <option v-for="ziel in offeneLernziele" :key="ziel.id" :value="ziel.id">
+                                                {{ ziel.module_id }}: {{ ziel.title }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="nt-zwischenziel" class="form-label">Zwischenziel (optional)</label>
+                                        <select id="nt-zwischenziel" class="form-select" v-model="nachtrag.zwischenziel_id">
+                                            <option value="">Keins</option>
+                                            <option v-for="ziel in zwischenzieleVon(nachtrag.lernziel_id)" :key="ziel.id" :value="ziel.id">
+                                                {{ ziel.title }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="nt-datum" class="form-label">Datum</label>                                        <input id="nt-datum" type="date" class="form-control" v-model="nachtrag.datum"
+                                               :max="heute()" required>
+                                    </div>
+                                    <div class="col-6 col-md-4">
+                                        <label for="nt-von" class="form-label">Von</label>
+                                        <input id="nt-von" type="time" class="form-control" v-model="nachtrag.von" required>
+                                    </div>
+                                    <div class="col-6 col-md-4">
+                                        <label for="nt-bis" class="form-label">Bis</label>
+                                        <input id="nt-bis" type="time" class="form-control" v-model="nachtrag.bis" required>
+                                    </div>
+                                    <div class="col-12 d-flex flex-wrap align-items-center gap-3 mt-3">
+                                        <button type="submit" class="btn btn-success">Lernzeit speichern</button>                                        <span v-if="nachtragMinuten > 0" class="text-secondary">
+                                            Dauer: <strong>{{ minutenText(nachtragMinuten) }}</strong>
+                                        </span>
+                                    </div>
+                                </form>
+                                <p v-if="nachtragFehler" class="text-danger mt-2 mb-0" role="alert">{{ nachtragFehler }}</p>
+                            </div>
+                        </section>
+                        <p v-if="rueckmeldung" class="text-success" role="status">{{ rueckmeldung }}</p>
+
+
+
+                        <section class="card overview-card" aria-labelledby="gelernt-titel">
+                            <div class="card-body">
+                                <h2 id="gelernt-titel" class="h5">Zuletzt gelernt</h2>
+                                <p v-if="zuletztGelernt.length === 0" class="text-secondary mb-0">
+                                    Du hast noch keine Lernzeiten gespeichert.
+                                </p>
+                                <ul v-else class="list-group list-group-flush">
+                                    <li v-for="zeit in zuletztGelernt" :key="zeit.id"
+                                        class="list-group-item px-0 d-flex align-items-center gap-3">
+                                        <span class="me-auto">
+                                            {{ zeitraumText(zeit.actual_start_time, zeit.actual_end_time) }}
+                                            <br><small class="text-secondary">{{ zielName(zeit, lernziele, zwischenziele) }}</small>
+                                        </span>
+                                        <strong class="text-nowrap">{{ minutenText(zeit.duration) }}</strong>
+                                        <button type="button" class="btn btn-outline-danger btn-sm"
+                                                @click="lernzeitLoeschen(zeit)">Löschen</button>
+                                    </li>
+                                </ul>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="col-lg-5">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h2 class="h5 mb-0">Geplante Lernblöcke</h2>
+                            <a class="btn btn-outline-success btn-sm" href="/monatsplan.html">Lernblock planen</a>
+                        </div>
+                        <p v-if="geplanteBloecke.length === 0" class="text-secondary">
+                            Im Moment ist kein Lernblock geplant.
+                        </p>
+                        <div v-for="block in geplanteBloecke" :key="block.id" class="card lernblock mb-2">
+                            <div class="card-body py-2 d-flex justify-content-between align-items-center gap-2">
+                                <div>
+                                    <strong>{{ zeitraumText(block.planned_start_time, block.planned_end_time) }}</strong>
+                                    <br>{{ zielName(block, lernziele, zwischenziele) }}
+                                    <br>
+                                    <small class="text-secondary">
+                                        Geplant: {{ minutenText(minutenZwischen(block.planned_start_time, block.planned_end_time)) }}
+                                    </small>
+                                    <span v-if="verpasst(block)" class="badge text-bg-warning ms-1">verpasst</span>
+                                </div>
+                                <button type="button" class="btn btn-success btn-sm" @click="blockStarten(block)"
+                                        :disabled="laufend !== null">Starten</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.5.22/dist/vue.global.prod.js"></script>
+    <script src="/static/js/gemeinsam.js"></script>
+    <script>
+        function leererNachtrag() {
+            return { lernziel_id: "", zwischenziel_id: "", datum: heute(), von: "", bis: "" };
+        }
+
+        const app = Vue.createApp({
+            data() {
+                return {
+                    lernziele: [],
+                    zwischenziele: [],
+                    lernzeiten: [],
+                    auswahl: { lernziel_id: "", zwischenziel_id: "" }, 
+                    nachtrag: leererNachtrag(),
+                    nachtragFehler: "",
+                    jetzt: Date.now(),
+                    fehler: "",
+                    rueckmeldung: "",
+                };
+            },
+            computed: {
+                laufend() {
+                    const zeit = this.lernzeiten.find((zeit) => zeit.actual_start_time && !zeit.actual_end_time);
+                    return zeit || null;
+                },
+                sekunden() {
+                    if (!this.laufend) {
+                        return 0;
+                    }
+                    const beginn = new Date(this.laufend.actual_start_time).getTime();
+                    return Math.max(0, Math.floor((this.jetzt - beginn) / 1000));
+                },
+                planMinuten() {
+                    if (!this.laufend) {
+                        return 0;
+                    }
+                    return minutenZwischen(this.laufend.planned_start_time, this.laufend.planned_end_time);
+                },
+                uhrText() {
+                    const stunden = Math.floor(this.sekunden / 3600);
+                    const minuten = String(Math.floor((this.sekunden % 3600) / 60)).padStart(2, "0");
+                    const sekunden = String(this.sekunden % 60).padStart(2, "0");
+                    if (stunden > 0) {
+                        return stunden + ":" + minuten + ":" + sekunden;
+                    }
+                    return minuten + ":" + sekunden;
+                },
+                fortschrittText() {
+                    const gelernt = Math.floor(this.sekunden / 60);
+                    if (this.planMinuten > 0) {
+                        return gelernt + " von " + this.planMinuten + " geplanten Minuten";
+                    }
+                    return gelernt + " Minuten ohne Plan";
+                },
+                nachtragMinuten() {
+                    if (!this.nachtrag.datum || !this.nachtrag.von || !this.nachtrag.bis) {
+                        return 0;
+                    }
+                    const beginn = new Date(this.nachtrag.datum + "T" + this.nachtrag.von);
+                    const ende = new Date(this.nachtrag.datum + "T" + this.nachtrag.bis);
+                    return minutenZwischen(beginn, ende);
+                },
+                geplanteBloecke() {
+                    const liste = this.lernzeiten.filter(
+                        (zeit) => zeit.status === "geplant" && zeit.planned_start_time && !zeit.actual_start_time,
+                    );
+                    liste.sort((a, b) => new Date(a.planned_start_time) - new Date(b.planned_start_time));
+                    return liste;
+                },
+                zuletztGelernt() {
+                    const liste = this.lernzeiten.filter(
+                        (zeit) => zeit.status === "abgeschlossen" && zeit.actual_start_time,
+                    );
+                    liste.sort((a, b) => new Date(b.actual_start_time) - new Date(a.actual_start_time));
+                    return liste.slice(0, 5);
+                },
+                offeneLernziele() {
+                    return this.lernziele.filter((ziel) => ziel.status !== "completed");
+                },
+            },
+            methods: {
+                heute,
+                minutenText,
+                minutenZwischen,
+                zeitraumText,
+                zielName,
+
+                zwischenzieleVon(lernzielId) {
+                    return this.zwischenziele.filter(
+                        (ziel) => ziel.lernziel_id === lernzielId && ziel.status !== "completed",
+                    );
+                },
+                verpasst(block) {
+                    return new Date(block.planned_end_time).getTime() < this.jetzt;
+                },
+                async laden() {
+                    try {
+                        this.lernziele = await api("GET", "/api/lernziele/");
+                        this.zwischenziele = await api("GET", "/api/zwischenziele/");
+                        this.lernzeiten = await api("GET", "/api/lernzeiten/");
+                    } catch (error) {
+                        this.fehler = error.message;
+                    }
+                },
+                async blockStarten(block) {
+                    this.fehler = "";
+                    this.rueckmeldung = "";
+                    try {
+                        await api("PUT", "/api/lernzeiten/" + block.id, {
+                            actual_start_time: new Date().toISOString(),
+                        });
+                    } catch (error) {
+                        this.fehler = error.message;
+                    }
+                    await this.laden();
+                },
+                async freiStarten() {
+                    this.fehler = "";
+                    this.rueckmeldung = "";
+                    const daten = { actual_start_time: new Date().toISOString() };
+                    if (this.auswahl.zwischenziel_id) {
+                        daten.zwischenziel_id = this.auswahl.zwischenziel_id;
+                    } else {
+                        daten.lernziel_id = this.auswahl.lernziel_id;
+                    }
+                    try {
+                        await api("POST", "/api/lernzeiten/", daten);
+                    } catch (error) {
+                        this.fehler = error.message;
+                    }
+                    await this.laden();
+                },
+                async beenden() {
+                    this.fehler = "";
+                    try {
+                        const gespeichert = await api("PUT", "/api/lernzeiten/" + this.laufend.id, {
+                            actual_end_time: new Date().toISOString(),
+                            status: "abgeschlossen",
+                        });
+                        this.rueckmeldung = "Gespeichert: " + minutenText(gespeichert.duration) + " gelernt.";
+                    } catch (error) {
+                        this.fehler = error.message;
+                    }
+                    await this.laden();
+                },
+                async nachtragen() {
+                    this.nachtragFehler = "";
+                    this.rueckmeldung = "";
+                    const beginn = new Date(this.nachtrag.datum + "T" + this.nachtrag.von);
+                    const ende = new Date(this.nachtrag.datum + "T" + this.nachtrag.bis);
+                    if (ende <= beginn) {
+                        this.nachtragFehler = "Das Ende muss nach dem Beginn liegen.";
+                        return;
+                    }
+                    if (ende.getTime() > Date.now()) {
+                        this.nachtragFehler = "Die Lernzeit darf nicht in der Zukunft liegen.";
+                        return;
+                    }
+                    const daten = {
+                        actual_start_time: beginn.toISOString(),
+                        actual_end_time: ende.toISOString(),
+                        status: "abgeschlossen",
+                    };
+                    if (this.nachtrag.zwischenziel_id) {
+                        daten.zwischenziel_id = this.nachtrag.zwischenziel_id;
+                    } else {
+                        daten.lernziel_id = this.nachtrag.lernziel_id;
+                    }
+                    try {
+                        const gespeichert = await api("POST", "/api/lernzeiten/", daten);
+                        this.rueckmeldung = "Nachgetragen: " + minutenText(gespeichert.duration) + " gelernt.";
+                        this.nachtrag = leererNachtrag();
+                    } catch (error) {
+                        this.nachtragFehler = error.message;
+                    }
+                    await this.laden();
+                },
+                async lernzeitLoeschen(zeit) {
+                    const wann = zeitraumText(zeit.actual_start_time, zeit.actual_end_time);
+                    if (!confirm("Lernzeit am " + wann + " wirklich löschen?")) {
+                        return;
+                    }
+                    this.fehler = "";
+                    this.rueckmeldung = "";
+                    try {
+                        await api("DELETE", "/api/lernzeiten/" + zeit.id);
+                    } catch (error) {
+                        this.fehler = error.message;
+                    }
+                    await this.laden();
+                },
+                async verwerfen() {
+                    if (!confirm("Die laufende Lernsession wirklich verwerfen? Die Zeit wird nicht gespeichert.")) {
+                        return;
+                    }
+                    this.fehler = "";
+                    try {
+                        if (this.laufend.planned_start_time) {
+                            await api("PUT", "/api/lernzeiten/" + this.laufend.id, { actual_start_time: null });
+                        } else {
+                            await api("DELETE", "/api/lernzeiten/" + this.laufend.id);
+                        }
+                    } catch (error) {
+                        this.fehler = error.message;
+                    }
+                    await this.laden();
+                },
+            },
+            mounted() {
+                this.laden();
+                setInterval(() => {
+                    this.jetzt = Date.now();
+                }, 1000);
+            },
+        });
+        app.mount("#app");
+    </script>
+</body>
+</html>

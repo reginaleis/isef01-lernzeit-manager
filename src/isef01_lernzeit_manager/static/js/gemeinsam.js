@@ -142,6 +142,52 @@ function minutenText(minuten) {
     return stunden + " h " + rest + " min";
 }
 
+function tagText(zeitstempel) {
+    return new Date(zeitstempel).toLocaleDateString("de-DE", {
+        weekday: "short",
+        day: "2-digit",
+        month: "2-digit",
+    });
+}
+
+function uhrzeitText(zeitstempel) {
+    return new Date(zeitstempel).toLocaleTimeString("de-DE", {
+        hour: "2-digit",
+        minute: "2-digit",
+    });
+}
+
+function zeitraumText(beginn, ende) {
+    if (!beginn) {
+        return "Ohne Plan";
+    }
+    let text = tagText(beginn) + " " + uhrzeitText(beginn);
+    if (ende) {
+        text += "–" + uhrzeitText(ende);
+    }
+    return text + " Uhr";
+}
+
+function minutenZwischen(beginn, ende) {
+    if (!beginn || !ende) {
+        return 0;
+    }
+    return Math.max(0, Math.round((new Date(ende) - new Date(beginn)) / 60000));
+}
+
+function zielName(lernzeit, lernziele, zwischenziele) {
+    const zwischenziel = zwischenziele.find((z) => z.id === lernzeit.zwischenziel_id);
+    if (zwischenziel) {
+        const lernziel = lernziele.find((l) => l.id === zwischenziel.lernziel_id);
+        return (lernziel ? lernziel.module_id + ": " : "") + zwischenziel.title;
+    }
+    const lernziel = lernziele.find((l) => l.id === lernzeit.lernziel_id);
+    if (lernziel) {
+        return lernziel.module_id + ": " + lernziel.title;
+    }
+    return "Ohne Lernziel";
+}
+
 async function demoDatenWiederherstellen(button) {
     button.disabled = true;
     try {

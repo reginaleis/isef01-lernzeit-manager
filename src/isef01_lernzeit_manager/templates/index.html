@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Übersicht | Lernzeit Manager</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+          integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+          crossorigin="anonymous">
+</head>
+<body>
+    <header class="topbar p-3"></header>
+    <div class="container-fluid">
+        <main id="app" class="overview p-3 p-lg-4" v-cloak>
+            <header class="overview-kopf p-4 rounded-4 mb-4">
+                <div class="overview-kopf-inhalt d-flex flex-column flex-md-row align-items-md-center justify-content-between">
+                    <div>
+                        <p class="small text-success fw-semibold mb-1">BEHALTE ALLES IM BLICK</p>
+                        <h1 class="h2 mb-0">Dein Lernfortschritt</h1>
+                    </div>
+                    <aside v-if="!laedt && !fehler" class="overview-status p-3 bg-white"
+                           :class="statusWarnung ? 'overview-status--warnung' : 'overview-status--gut'"
+                           aria-label="Willkommen und Lernstatus" aria-live="polite">
+                        <p class="overview-status-willkommen mb-1">Willkommen zurück!</p>
+                        <p class="overview-status-hinweis mb-2">{{ statusRueckmeldung }}</p>
+                        <p v-if="ueberfaelligeLernziele.length || ueberfaelligeZwischenziele.length"
+                           class="small mb-1">
+                            <span v-if="ueberfaelligeLernziele.length">
+                                {{ ueberfaelligeLernziele.length }}
+                                {{ ueberfaelligeLernziele.length === 1 ? "Lernziel" : "Lernziele" }} überfällig
+                            </span>
+                            <span v-if="ueberfaelligeLernziele.length && ueberfaelligeZwischenziele.length"> · </span>
+                            <span v-if="ueberfaelligeZwischenziele.length">
+                                {{ ueberfaelligeZwischenziele.length }}
+                                {{ ueberfaelligeZwischenziele.length === 1 ? "Zwischenziel" : "Zwischenziele" }} überfällig
+                            </span>
+                        </p>
+                        <p v-if="ueberfaelligeLernzeiten.length" class="small mb-1">
+                            <span v-if="ueberfaelligeLernzeiten.length === 1">Eine Lernsession verpasst</span>
+                            <span v-else>Mehrere Lernsessions verpasst</span>
+                        </p>
+                        <p class="small mb-0">
+                            <strong>Du arbeitest aktuell an:</strong> {{ aktuelleArbeitText }}
+                        </p>
+                    </aside>
+                </div>
+            </header>
+
+            <div v-if="fehler" class="alert alert-danger" role="alert">{{ fehler }}</div>
+            <p v-if="laedt" class="text-secondary" role="status">Deine Übersicht wird geladen …</p>
+
+            <template v-if="!laedt && !fehler">
+                <div class="row g-4 mb-4">
+                    <section class="col-lg-5" aria-labelledby="status-titel">
+                        <div class="card overview-card h-100">
+                            <div class="card-body">
+                                <h2 id="status-titel" class="h5 mb-4">Deine Lernziele nach Status</h2>
+                                <div class="status-uebersicht d-flex flex-wrap align-items-center justify-content-center">
+                                    <div class="status-diagramm" role="group"
+                                         aria-label="Verteilung aller Lernziele nach Status">
+                                        <svg class="status-diagramm-segmente position-absolute top-0 start-0 w-100 h-100"
+                                             viewBox="0 0 200 200">
+                                            <g transform="rotate(-90 100 100)">
+                                                <circle v-for="status in statusSegmente" :key="status.wert"
+                                                        cx="100" cy="100" r="82" fill="none"
+                                                        :stroke="status.farbe" stroke-width="32"
+                                                        :stroke-dasharray="status.dasharray"
+                                                        :stroke-dashoffset="status.dashoffset"
+                                                        :aria-label="status.text + ': ' + status.anzahl"
+                                                        :title="status.text + ': ' + status.anzahl"
+                                                        role="img" tabindex="0"
+                                                        @mouseenter="hoverStatus = status"
+                                                        @mouseleave="hoverStatus = null"
+                                                        @focus="hoverStatus = status"
+                                                        @blur="hoverStatus = null">
+                                                </circle>
+                                            </g>
+                                        </svg>
+                                        <div v-if="hoverStatus" class="status-tooltip" role="status">
+                                            {{ hoverStatus.text }}: {{ hoverStatus.anzahl }}
+                                        </div>
+                                        <div class="status-diagramm-mitte d-flex flex-column align-items-center justify-content-center">
+                                            <strong>{{ lernziele.length }}</strong>
+                                            <span>Lernziele</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="col-lg-7" aria-labelledby="monatsfortschritt-titel">
+                        <div class="card overview-card h-100">
+                            <div class="card-body d-flex flex-column">
+                                <h2 id="monatsfortschritt-titel" class="h5 mb-1">
+                                    Dein aktueller Lernmonat: {{ monatsname }}
+                                </h2>
+                                <div class="d-flex justify-content-between gap-3 mb-2">
+                                    <span>Gelernt: <strong>{{ minutenText(gelernteMinuten) }}</strong></span>
+                                    <span class="text-end">Geplant: <strong>{{ minutenText(geplanteMinuten) }}</strong></span>
+                                </div>
+                                <div class="progress lernfortschritt-balken rounded-pill" role="progressbar"
+                                     :aria-label="'Monatsfortschritt: ' + fortschrittProzent + ' Prozent'"
+                                     aria-valuemin="0" aria-valuemax="100"
+                                     :aria-valuenow="Math.min(100, fortschrittProzent)">
+                                    <div class="progress-bar bg-success"
+                                         :style="{ width: Math.min(100, fortschrittProzent) + '%' }"></div>
+                                </div>
+                                <p class="text-secondary small mt-2 mb-3">
+                                    {{ fortschrittProzent }} % der geplanten Lernzeit erreicht
+                                </p>
+                                <p class="motivationsbotschaft mb-4" role="status">{{ motivationsbotschaft }}</p>
+                                <div class="d-flex flex-wrap align-items-center gap-2 mt-auto">
+                                    <a class="btn btn-success" href="/lernzeit.html">Lernsession jetzt starten</a>
+                                    <div v-if="ueberfaelligeLernzeiten.length"
+                                         class="alert alert-warning lernzeit-erinnerung py-2 px-3 mb-0" role="alert">
+                                        <span v-if="ueberfaelligeLernzeiten.length === 1">
+                                            Du hast eine geplante Lernsession verpasst.
+                                        </span>
+                                        <span v-else>Du hast mehrere geplante Lernsessions verpasst.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <section class="mb-4" aria-labelledby="offene-lernziele-titel">
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                        <div>
+                            <h2 id="offene-lernziele-titel" class="h4 mb-1">Das steht als Nächstes an</h2>
+                            <p class="text-secondary mb-0">Deine Lernziele, die noch nicht abgeschlossen sind</p>
+                        </div>
+                        <a class="btn btn-outline-success ms-auto" href="/lernziele.html">Alle Lernziele verwalten</a>
+                    </div>
+                    <p v-if="offeneLernziele.length === 0" class="text-secondary">
+                        Alle Lernziele sind abgeschlossen. Das hast du großartig gemacht!
+                    </p>
+                    <div v-else class="offene-lernziele-scroll">
+                        <div class="row g-3">
+                            <article v-for="ziel in offeneLernziele" :key="ziel.id" class="col-xl-6">
+                                <div class="card overview-card offene-lernziel-karte">
+                                    <div class="card-body d-flex flex-column">
+                                    <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
+                                        <div>
+                                            <p class="small text-secondary mb-1">{{ ziel.module_id }}</p>
+                                            <h3 class="h5 mb-0">{{ ziel.title }}</h3>
+                                            <p class="small text-secondary mb-0">
+                                                Prüfungsart: {{ ziel.exam_type || "Keine Prüfungsart angegeben" }}
+                                            </p>
+                                        </div>
+                                        <span class="badge status-abzeichen"
+                                              :class="'status--' + ziel.status">
+                                            {{ statusText(ziel.status) }}
+                                        </span>
+                                    </div>
+                                    <p class="lernziel-naechster-schritt mb-2 p-2 rounded small"
+                                       :class="{ 'status--overdue': fristwarnung(ziel) }">
+                                        <strong>Nächster Schritt:</strong> {{ naechsterSchritt(ziel) }}
+                                    </p>
+                                    <p v-if="ziel.description"
+                                       class="offene-lernziel-beschreibung text-secondary mb-3">
+                                        {{ ziel.description }}
+                                    </p>
+                                    <p v-if="zwischenzieleFuer(ziel.id).length === 0"
+                                       class="small text-secondary mb-0">
+                                        Für dieses Lernziel gibt es noch keine Zwischenziele.
+                                    </p>
+                                    <ul v-else class="zwischenziel-liste d-grid gap-1 list-unstyled mb-0">
+                                        <li v-for="zwischenziel in zwischenzieleFuer(ziel.id)"
+                                            :key="zwischenziel.id"
+                                            class="zwischenziel-zeile d-flex align-items-center gap-2 py-1 px-2 rounded small"
+                                            :class="'status--' + zwischenziel.status">
+                                            <input type="checkbox" class="form-check-input"
+                                                   :checked="zwischenziel.status === 'completed'"
+                                                   :indeterminate="zwischenziel.status === 'in_progress'"
+                                                   :disabled="zwischenzielSpeichert.includes(zwischenziel.id)"
+                                                   @change="zwischenzielStatusAendern(zwischenziel)"
+                                                   :aria-checked="zwischenziel.status === 'in_progress' ? 'mixed' : zwischenziel.status === 'completed' ? 'true' : 'false'"
+                                                   :aria-label="statusText(zwischenziel.status) + ': ' + zwischenziel.title">
+                                            <span class="zwischenziel-titel">{{ zwischenziel.title }}</span>
+                                            <span class="small">{{ statusText(zwischenziel.status) }}</span>
+                                        </li>
+                                    </ul>
+                                        <div class="d-flex justify-content-end mt-auto pt-2">
+                                            <a class="btn btn-sm btn-outline-success"
+                                               :href="'/lernziele.html?bearbeiten=' + ziel.id">
+                                                Lernziel bearbeiten
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </article>
+                        </div>
+                    </div>
+                </section>
+
+                <section aria-labelledby="abgeschlossene-lernziele-titel">
+                    <div class="mb-3">
+                        <h2 id="abgeschlossene-lernziele-titel" class="h4 mb-1">Schon geschafft</h2>
+                        <p class="text-secondary mb-0">Deine abgeschlossenen Lernziele auf einen Blick</p>
+                    </div>
+                    <p v-if="abgeschlosseneLernziele.length === 0" class="text-secondary">
+                        Hier erscheinen deine Lernziele, sobald du sie abgeschlossen hast.
+                    </p>
+                    <div v-else class="abgeschlossene-lernziele-scroll">
+                        <div class="row g-3">
+                            <article v-for="ziel in abgeschlosseneLernziele" :key="ziel.id" class="col-12">
+                                <div class="card overview-card abgeschlossene-karte">
+                                    <div class="card-body py-2 px-3">
+                                        <h3 class="h6 mb-2">
+                                            <small class="text-secondary fw-normal">{{ ziel.module_id }}: </small> {{ ziel.title }}
+                                        </h3>
+                                        <dl class="abschluss-details mb-0">
+                                            <div><dt class="small text-secondary fw-normal lh-1">Prüfung</dt><dd class="fw-semibold">{{ ziel.exam_type || "–" }}</dd></div>
+                                            <div><dt class="small text-secondary fw-normal lh-1">ECTS</dt><dd class="fw-semibold">{{ ziel.ects ?? "–" }}</dd></div>
+                                            <div><dt class="small text-secondary fw-normal lh-1">Lernzeit</dt><dd class="fw-semibold">{{ minutenText(ziel.accumulated_study_time) }}</dd></div>
+                                            <div><dt class="small text-secondary fw-normal lh-1">Zwischenziele</dt><dd class="fw-semibold">{{ zwischenzieleFuer(ziel.id).length }}</dd></div>
+                                            <div><dt class="small text-secondary fw-normal lh-1">Abschluss am</dt><dd class="fw-semibold">{{ datumText(ziel.completed_on) }}</dd></div>
+                                        </dl>
+                                    </div>
+                                </div>
+                            </article>
+                        </div>
+                    </div>
+                </section>
+            </template>
+        </main>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.5.22/dist/vue.global.prod.js"></script>
+    <script src="/static/js/gemeinsam.js"></script>
+    <script>
+        const STATUS_FARBEN = {
+            completed: "#2f855a",
+            in_progress: "#2878b5",
+            not_started: "#aab3bd",
+            overdue: "#c74646",
+        };
+        const STATUS_SORTIERUNG = ["completed", "in_progress", "not_started", "overdue"];
+
+        const app = Vue.createApp({
+            data() {
+                return {
+                    lernziele: [],
+                    zwischenziele: [],
+                    lernzeiten: [],
+                    zwischenzielSpeichert: [],
+                    laedt: true,
+                    fehler: "",
+                    hoverStatus: null,
+                    aktuelleZeit: Date.now(),
+                    timerAktualisierung: null,
+                };
+            },
+            computed: {
+                offeneLernziele() {
+                    return lernzieleSortieren(this.lernziele.filter(ziel => ziel.status !== "completed"));
+                },
+                ueberfaelligeLernziele() {
+                    return this.lernziele.filter(ziel => ziel.status === "overdue");
+                },
+                ueberfaelligeZwischenziele() {
+                    return this.zwischenziele.filter(zwischenziel => zwischenziel.status === "overdue");
+                },
+                aktuellBearbeiteteLernziele() {
+                    return this.lernziele.filter(ziel => ziel.status === "in_progress");
+                },
+                aktuelleArbeitText() {
+                    if (this.aktuellBearbeiteteLernziele.length === 1) {
+                        return this.aktuellBearbeiteteLernziele[0].title;
+                    }
+                    return this.aktuellBearbeiteteLernziele.length > 1
+                        ? this.aktuellBearbeiteteLernziele.length + " Modulen"
+                        : "keinem Modul.";
+                },
+                statusWarnung() {
+                    return this.ueberfaelligeLernzeiten.length > 0
+                        || this.ueberfaelligeLernziele.length > 0
+                        || this.ueberfaelligeZwischenziele.length > 0;
+                },
+                statusRueckmeldung() {
+                    if (this.ueberfaelligeLernziele.length || this.ueberfaelligeZwischenziele.length) {
+                        return "Überfällige Ziele brauchen deine Aufmerksamkeit.";
+                    }
+                    if (this.ueberfaelligeLernzeiten.length) {
+                        return "Du hast verpasste Lernsessions.";
+                    }
+                    return "Alles im grünen Bereich – du bist im Plan.";
+                },
+                abgeschlosseneLernziele() {
+                    return this.lernziele.filter(ziel => ziel.status === "completed");
+                },
+                ueberfaelligeLernzeiten() {
+                    return this.lernzeiten.filter(zeit => {
+                        const geplantesEnde = Date.parse(zeit.planned_end_time);
+                        return zeit.status === "geplant"
+                            && !zeit.actual_start_time
+                            && Number.isFinite(geplantesEnde)
+                            && geplantesEnde < this.aktuelleZeit;
+                    });
+                },
+                statusListe() {
+                    return STATUS_SORTIERUNG.map(wert => ({
+                        wert,
+                        text: this.statusText(wert),
+                        farbe: STATUS_FARBEN[wert],
+                        anzahl: this.lernziele.filter(ziel => ziel.status === wert).length,
+                    }));
+                },
+                statusSegmente() {
+                    const gesamt = this.lernziele.length;
+                    if (gesamt === 0) {
+                        return [];
+                    }
+                    const umfang = 2 * Math.PI * 82;
+                    let versatz = 0;
+                    return this.statusListe
+                        .filter(status => status.anzahl > 0)
+                        .map(status => {
+                            const laenge = status.anzahl / gesamt * umfang;
+                            const segment = {
+                                ...status,
+                                dasharray: laenge + " " + (umfang - laenge),
+                                dashoffset: -versatz,
+                            };
+                            versatz += laenge;
+                            return segment;
+                        });
+                },
+                monatsname() {
+                    return new Intl.DateTimeFormat("de-DE", { month: "long", year: "numeric" }).format(new Date());
+                },
+                geplanteMinuten() {
+                    const [monatsbeginn, monatsende] = this.monatsgrenzen();
+                    return this.lernzeiten
+                        .filter(zeit => zeit.status === "geplant")
+                        .reduce((summe, zeit) => summe + this.minutenImZeitraum(
+                            zeit.planned_start_time,
+                            zeit.planned_end_time,
+                            monatsbeginn,
+                            monatsende,
+                        ), 0);
+                },
+                gelernteMinuten() {
+                    const [monatsbeginn, monatsende] = this.monatsgrenzen();
+                    return this.lernzeiten
+                        .filter(zeit => {
+                            const start = Date.parse(zeit.actual_start_time);
+                            return zeit.status === "abgeschlossen"
+                                && Number.isFinite(start)
+                                && start >= monatsbeginn
+                                && start < monatsende;
+                        })
+                        .reduce((summe, zeit) => summe + zeit.duration, 0);
+                },
+                fortschrittProzent() {
+                    return this.geplanteMinuten === 0
+                        ? 0
+                        : Math.round(this.gelernteMinuten / this.geplanteMinuten * 100);
+                },
+                motivationsbotschaft() {
+                    if (this.geplanteMinuten === 0) {
+                        return "Dein Monatsplan wartet auf den ersten Eintrag. Plane deine Lernzeit und leg los!";
+                    }
+                    if (this.fortschrittProzent >= 100) {
+                        return "Stark! Du hast deine geplante Lernzeit erreicht. Weiter so!";
+                    }
+                    if (this.fortschrittProzent >= 50) {
+                        return "Du bist auf einem guten Weg – jede Lernminute bringt dich weiter.";
+                    }
+                    return "Schon ein kleiner Lernschritt zählt. Du schaffst das!";
+                },
+            },
+            methods: {
+                minutenText,
+                datumText,
+                statusText(status) {
+                    return status === "not_started" ? "Geplant" : STATUS_TEXT[status] || "Unbekannt";
+                },
+                zwischenzieleFuer(lernzielId) {
+                    return this.zwischenziele.filter(zwischenziel => zwischenziel.lernziel_id === lernzielId);
+                },
+                tageBis(datum) {
+                    if (!datum) {
+                        return null;
+                    }
+                    const zielzeit = Date.parse(datum + "T00:00:00Z");
+                    const heutezeit = Date.parse(heute() + "T00:00:00Z");
+                    if (!Number.isFinite(zielzeit)) {
+                        return null;
+                    }
+                    return Math.round((zielzeit - heutezeit) / 86400000);
+                },
+                tageText(tage, mitPraeposition = false) {
+                    const anzahl = Math.abs(tage);
+                    if (mitPraeposition) {
+                        return anzahl === 1 ? "einem Tag" : anzahl + " Tagen";
+                    }
+                    return anzahl + (anzahl === 1 ? " Tag" : " Tage");
+                },
+                naechsterSchritt(ziel) {
+                    const tage = this.tageBis(ziel.status === "not_started" ? ziel.start_date : ziel.end_date);
+                    if (tage === null) {
+                        return ziel.status === "not_started"
+                            ? "Kein Startdatum festgelegt"
+                            : "Kein Zieldatum festgelegt";
+                    }
+                    if (ziel.status === "not_started") {
+                        if (tage === 0) {
+                            return "Startet heute";
+                        }
+                        return tage > 0
+                            ? "Start in " + this.tageText(tage, true)
+                            : "Starttermin war vor " + this.tageText(tage, true);
+                    }
+                    if (ziel.status === "overdue") {
+                        return tage < 0
+                            ? "Seit " + this.tageText(tage, true) + " überfällig"
+                            : tage === 0 ? "Seit heute überfällig" : "Zieldatum in " + this.tageText(tage, true);
+                    }
+                    if (tage > 0) {
+                        return "Noch " + this.tageText(tage) + " bis zum Abschluss";
+                    }
+                    return tage === 0
+                        ? "Abschluss heute fällig"
+                        : "Seit " + this.tageText(tage, true) + " über dem Zieldatum";
+                },
+                fristwarnung(ziel) {
+                    return ziel.status === "overdue"
+                        || ziel.status === "in_progress" && this.tageBis(ziel.end_date) < 0;
+                },
+                async zwischenzielStatusAendern(zwischenziel) {
+                    const alterStatus = zwischenziel.status;
+                    const neuerStatus = alterStatus === "completed"
+                        ? "not_started"
+                        : alterStatus === "in_progress" ? "completed" : "in_progress";
+                    this.fehler = "";
+                    this.zwischenzielSpeichert.push(zwischenziel.id);
+                    zwischenziel.status = neuerStatus;
+                    try {
+                        const gespeichert = await api("PUT", "/api/zwischenziele/" + zwischenziel.id, {
+                            status: neuerStatus,
+                        });
+                        zwischenziel.status = gespeichert.status;
+                    } catch (error) {
+                        zwischenziel.status = alterStatus;
+                        this.fehler = error.message;
+                    } finally {
+                        this.zwischenzielSpeichert = this.zwischenzielSpeichert
+                            .filter(id => id !== zwischenziel.id);
+                    }
+                },
+                monatsgrenzen() {
+                    const heute = new Date();
+                    return [
+                        new Date(heute.getFullYear(), heute.getMonth(), 1).getTime(),
+                        new Date(heute.getFullYear(), heute.getMonth() + 1, 1).getTime(),
+                    ];
+                },
+                minutenImZeitraum(beginnText, endeText, zeitraumBeginn, zeitraumEnde) {
+                    if (!beginnText || !endeText) {
+                        return 0;
+                    }
+                    const beginn = Date.parse(beginnText);
+                    const ende = Date.parse(endeText);
+                    if (!Number.isFinite(beginn) || !Number.isFinite(ende) || ende <= beginn) {
+                        return 0;
+                    }
+                    const ueberlappung = Math.min(ende, zeitraumEnde) - Math.max(beginn, zeitraumBeginn);
+                    return ueberlappung > 0 ? Math.floor(ueberlappung / 60000) : 0;
+                },
+                async laden() {
+                    this.laedt = true;
+                    this.fehler = "";
+                    try {
+                        const [lernziele, zwischenziele, lernzeiten] = await Promise.all([
+                            api("GET", "/api/lernziele/"),
+                            api("GET", "/api/zwischenziele/"),
+                            api("GET", "/api/lernzeiten/"),
+                        ]);
+                        this.lernziele = lernziele;
+                        this.zwischenziele = zwischenziele;
+                        this.lernzeiten = lernzeiten;
+                    } catch (error) {
+                        this.fehler = error.message;
+                    } finally {
+                        this.laedt = false;
+                    }
+                },
+            },
+            mounted() {
+                this.timerAktualisierung = window.setInterval(() => {
+                    this.aktuelleZeit = Date.now();
+                }, 60000);
+                this.laden().then(() => {
+                    const bearbeitenId = Number(new URLSearchParams(window.location.search).get("bearbeiten"));
+                    if (!bearbeitenId || this.fehler) {
+                        return;
+                    }
+                    const ziel = this.lernziele.find(element => element.id === bearbeitenId);
+                    if (ziel) {
+                        this.bearbeiten(ziel);
+                    } else {
+                        this.fehler = "Das ausgewählte Lernziel wurde nicht gefunden.";
+                    }
+                });
+            },
+            unmounted() {
+                window.clearInterval(this.timerAktualisierung);
+            },
+        });
+        app.mount("#app");
+    </script>
+</body>
+</html>

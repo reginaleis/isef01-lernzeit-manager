@@ -11,26 +11,14 @@
     <title>Lernzeit Manager</title>
 </head>
 <body>
+    <header class="topbar p-3"></header>
     <div class="container-fluid">
         <div class="row min-vh-100">
-            <aside class="sidebar col-md-3 col-xl-2 p-3">
-                <p>Lernzeit Manager</p>
-                <nav class="nav flex-column gap-1" aria-label="Seitenauswahl">
-                    <a class="nav-link text-dark" href="/">Übersicht</a>
-                    <a class="nav-link rounded bg-white text-success fw-bold"
-                       href="/lernziele.html" aria-current="page">Lernziele</a>
-                    <a class="nav-link text-dark" href="/halbjahresplan.html">Halbjahresplan</a>
-                    <a class="nav-link text-dark" href="/monatsplan.html">Monatsplan</a>
-                    <a class="nav-link text-dark" href="/lernzeit.html">Lernzeit</a>
-                    <a class="nav-link text-dark" href="/auswertung.html">Auswertung</a>
-                    <a class="nav-link text-dark" href="/erinnerungen.html">Erinnerungen</a>
-                </nav>
-            </aside>
-            <main id="app" class="col-md-9 col-xl-10 p-3 p-lg-4" v-cloak>
+            <main id="app" class="col-12 p-3 p-lg-4" v-cloak>
                 <header class="mb-4">
                     <p class="small text-success fw-semibold mb-1">ZIELE FÜR DAS HALBJAHR</p>
                     <h1>Lernziele</h1>
-                    <p>Lege das fest, was du dieses Semester schaffen möchtest.</p>
+                    <p>Lege fest, was du dieses Semester schaffen möchtest.</p>
                 </header>
                 <div v-if="fehler" class="alert alert-danger sticky-top" role="alert">{{ fehler }}</div>
                 <section class="card mb-4" aria-labelledby="formular-titel">
@@ -128,8 +116,94 @@
                                         <td class="text-nowrap">
                                             <button type="button" class="btn btn-sm btn-outline-success me-1"
                                                     @click="bearbeiten(ziel)">Bearbeiten</button>
+                                            <button type="button" class="btn btn-sm btn-outline-success me-1"
+                                                    @click="zwischenzieleZeigen(ziel)">
+                                                Zwischenziele ({{ zwischenzieleVon(ziel.id).length }})
+                                            </button>
                                             <button type="button" class="btn btn-sm btn-outline-danger"
                                                     @click="loeschen(ziel)">Löschen</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <section v-if="gewaehltesLernziel" id="zwischenziele" class="card mt-4"
+                         aria-labelledby="zwischenziele-titel">
+                    <div class="card-body">
+                        <h2 id="zwischenziele-titel" class="h5">
+                            Zwischenziele für „{{ gewaehltesLernziel.title }}“
+                        </h2>
+                        <p class="text-secondary">
+                            Teile das Lernziel in kleinere Schritte auf.
+                        </p>
+                        <div v-if="zwischenzielFehler" class="alert alert-danger" role="alert">{{ zwischenzielFehler }}</div>
+                        <form class="row g-3 align-items-end" @submit.prevent="zwischenzielSpeichern">
+                            <div class="col-md-5">
+                                <label for="zz-titel" class="form-label">Titel des Zwischenziels</label>
+                                <input id="zz-titel" type="text" class="form-control"
+                                       v-model="zwischenzielFormular.title" required>
+                            </div>
+                            <div class="col-6 col-md-2">
+                                <label for="zz-beginn" class="form-label">Beginn</label>
+                                <input id="zz-beginn" type="date" class="form-control"
+                                       v-model="zwischenzielFormular.start_date"
+                                       :min="gewaehltesLernziel.start_date" :max="gewaehltesLernziel.end_date">
+                            </div>
+                            <div class="col-6 col-md-2">
+                                <label for="zz-zieldatum" class="form-label">Zieldatum</label>
+                                <input id="zz-zieldatum" type="date" class="form-control"
+                                       v-model="zwischenzielFormular.end_date"
+                                       :min="zwischenzielFormular.start_date || gewaehltesLernziel.start_date"
+                                       :max="gewaehltesLernziel.end_date">
+                            </div>
+                            <div class="col-md-3 d-flex gap-2">
+                                <button type="submit" class="btn btn-success">
+                                    {{ bearbeiteZwischenzielId ? "Änderung speichern" : "Hinzufügen" }}
+                                </button>
+                                <button v-if="bearbeiteZwischenzielId" type="button" class="btn btn-outline-secondary"
+                                        @click="zwischenzielAbbrechen">Abbrechen</button>
+                            </div>
+                        </form>
+
+                        <p v-if="zwischenzieleVon(gewaehltesLernziel.id).length === 0" class="text-secondary mt-3 mb-0">
+                            Für dieses Lernziel gibt es noch keine Zwischenziele.
+                        </p>
+                        <div v-else class="table-responsive mt-3">
+                            <table class="table align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Zwischenziel</th>
+                                        <th scope="col">Beginn</th>
+                                        <th scope="col">Zieldatum</th>
+                                        <th scope="col">Gelernt</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Aktion</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="zwischenziel in zwischenzieleVon(gewaehltesLernziel.id)" :key="zwischenziel.id">
+                                        <td>{{ zwischenziel.title }}</td>
+                                        <td>{{ datumText(zwischenziel.start_date) }}</td>
+                                        <td>{{ datumText(zwischenziel.end_date) }}</td>
+                                        <td class="text-nowrap">{{ minutenText(zwischenziel.accumulated_study_time) }}</td>
+                                        <td>
+                                            <select class="form-select form-select-sm status-auswahl"
+                                                    v-model="zwischenziel.status"
+                                                    @change="zwischenzielStatusSpeichern(zwischenziel)"
+                                                    :aria-label="'Status von ' + zwischenziel.title">
+                                                <option v-for="(text, wert) in statusTexte" :key="wert" :value="wert">
+                                                    {{ text }}
+                                                </option>
+                                            </select>
+                                        </td>
+                                        <td class="text-nowrap">
+                                            <button type="button" class="btn btn-sm btn-outline-success me-1"
+                                                    @click="zwischenzielBearbeiten(zwischenziel)">Bearbeiten</button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                                    @click="zwischenzielLoeschen(zwischenziel)">Löschen</button>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -154,12 +228,24 @@
                 description: "",
             };
         }
+        function leeresZwischenziel() {
+            return {
+                title: "",
+                start_date: "",
+                end_date: "",
+            };
+        }
         const app = Vue.createApp({
             data() {
                 return {
                     lernziele: [],
+                    zwischenziele: [],
                     formular: leeresLernziel(),
                     bearbeiteId: null,
+                    gewaehltesLernzielId: null,
+                    zwischenzielFormular: leeresZwischenziel(),
+                    bearbeiteZwischenzielId: null,
+                    zwischenzielFehler: "",
                     fehler: "",
                     rueckmeldung: "",
                     statusTexte: STATUS_TEXT,
@@ -174,13 +260,23 @@
                     ],
                 };
             },
+            computed: {
+                gewaehltesLernziel() {
+                    return this.lernziele.find((ziel) => ziel.id === this.gewaehltesLernzielId);
+                },
+            },
             methods: {
                 datumText,
                 minutenText,
 
+                zwischenzieleVon(lernzielId) {
+                    return this.zwischenziele.filter((zwischenziel) => zwischenziel.lernziel_id === lernzielId);
+                },
+
                 async laden() {
                     try {
-                        this.lernziele = await api("GET", "/api/lernziele/");
+                        this.lernziele = lernzieleSortieren(await api("GET", "/api/lernziele/"));
+                        this.zwischenziele = await api("GET", "/api/zwischenziele/");
                     } catch (error) {
                         this.fehler = error.message;
                     }
@@ -207,6 +303,8 @@
                     this.fehler = "";
                     this.rueckmeldung = "";
                     this.bearbeiteId = ziel.id;
+                    this.gewaehltesLernzielId = ziel.id;
+                    this.zwischenzielAbbrechen();
                     for (const feld in this.formular) {
                         this.formular[feld] = ziel[feld] === null ? "" : ziel[feld];
                     }
@@ -238,16 +336,85 @@
                     try {
                         await api("DELETE", "/api/lernziele/" + ziel.id);
                         if (ziel.id === this.bearbeiteId) {
-                            this.abbrechen(); 
+                            this.abbrechen();
                         }
                     } catch (error) {
                         this.fehler = error.message;
                     }
                     await this.laden();
                 },
+
+                zwischenzieleZeigen(ziel) {
+                    this.gewaehltesLernzielId = ziel.id;
+                    this.zwischenzielAbbrechen();
+                    this.$nextTick(() => document.getElementById("zz-titel").focus());
+                },
+                async zwischenzielSpeichern() {
+                    this.zwischenzielFehler = "";
+                    const daten = leerZuNull(this.zwischenzielFormular);
+                    daten.lernziel_id = this.gewaehltesLernzielId;
+                    try {
+                        if (this.bearbeiteZwischenzielId) {
+                            await api("PUT", "/api/zwischenziele/" + this.bearbeiteZwischenzielId, daten);
+                        } else {
+                            await api("POST", "/api/zwischenziele/", daten);
+                        }
+                        this.zwischenzielAbbrechen();
+                    } catch (error) {
+                        this.zwischenzielFehler = error.message;
+                    }
+                    await this.laden();
+                },
+                zwischenzielBearbeiten(zwischenziel) {
+                    this.zwischenzielFehler = "";
+                    this.bearbeiteZwischenzielId = zwischenziel.id;
+                    for (const feld in this.zwischenzielFormular) {
+                        this.zwischenzielFormular[feld] = zwischenziel[feld] === null ? "" : zwischenziel[feld];
+                    }
+                    document.getElementById("zz-titel").focus();
+                },
+                zwischenzielAbbrechen() {
+                    this.bearbeiteZwischenzielId = null;
+                    this.zwischenzielFormular = leeresZwischenziel();
+                },
+                async zwischenzielStatusSpeichern(zwischenziel) {
+                    this.zwischenzielFehler = "";
+                    try {
+                        await api("PUT", "/api/zwischenziele/" + zwischenziel.id, { status: zwischenziel.status });
+                    } catch (error) {
+                        this.zwischenzielFehler = error.message;
+                    }
+                    await this.laden();
+                },
+                async zwischenzielLoeschen(zwischenziel) {
+                    if (!confirm("„" + zwischenziel.title + "“ wirklich löschen?")) {
+                        return;
+                    }
+                    this.zwischenzielFehler = "";
+                    try {
+                        await api("DELETE", "/api/zwischenziele/" + zwischenziel.id);
+                        if (zwischenziel.id === this.bearbeiteZwischenzielId) {
+                            this.zwischenzielAbbrechen();
+                        }
+                    } catch (error) {
+                        this.zwischenzielFehler = error.message;
+                    }
+                    await this.laden();
+                },
             },
             mounted() {
-                this.laden();
+                this.laden().then(() => {
+                    const bearbeitenId = Number(new URLSearchParams(window.location.search).get("bearbeiten"));
+                    if (!bearbeitenId || this.fehler) {
+                        return;
+                    }
+                    const ziel = this.lernziele.find(element => element.id === bearbeitenId);
+                    if (ziel) {
+                        this.bearbeiten(ziel);
+                    } else {
+                        this.fehler = "Das ausgewählte Lernziel wurde nicht gefunden.";
+                    }
+                });
             },
         });
         app.mount("#app");

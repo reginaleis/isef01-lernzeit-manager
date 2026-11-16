@@ -4,7 +4,63 @@ const STATUS_TEXT = {
     completed: "Abgeschlossen",
     overdue: "Überfällig",
 };
+const LERNZIEL_STATUS_SORTIERUNG = ["overdue", "in_progress", "not_started", "completed"];
 const STUNDEN_PRO_ECTS = 30;
+const NAVIGATION = [
+    ["/", "Übersicht"],
+    ["/lernziele.html", "Lernziele"],
+    ["/halbjahresplan.html", "Halbjahresplan"],
+    ["/monatsplan.html", "Monatsplan"],
+    ["/lernzeit.html", "Lernzeit"],
+];
+
+function lernzieleSortieren(lernziele) {
+    return [...lernziele].sort(
+        (erstes, zweites) =>
+            LERNZIEL_STATUS_SORTIERUNG.indexOf(erstes.status)
+            - LERNZIEL_STATUS_SORTIERUNG.indexOf(zweites.status),
+    );
+}
+
+function navigationErstellen() {
+    const topbar = document.querySelector(".topbar");
+    if (!topbar) {
+        return;
+    }
+
+    const titel = document.createElement("p");
+    titel.className = "navbar-logo mb-0";
+    const lernzeit = document.createElement("span");
+    lernzeit.textContent = "Lernzeit";
+    const manager = document.createElement("span");
+    manager.textContent = "Manager";
+    titel.append(lernzeit, manager);
+    const nav = document.createElement("nav");
+    nav.className = "nav flex-row flex-wrap gap-1";
+    nav.setAttribute("aria-label", "Seitenauswahl");
+
+    for (const [pfad, name] of NAVIGATION) {
+        const link = document.createElement("a");
+        link.href = pfad;
+        link.textContent = name;
+        const aktiv = window.location.pathname === pfad;
+        link.className = aktiv
+            ? "nav-link rounded bg-white text-success fw-bold"
+            : "nav-link text-dark";
+        if (aktiv) {
+            link.setAttribute("aria-current", "page");
+        }
+        nav.append(link);
+    }
+
+    const resetButton = document.createElement("button");
+    resetButton.type = "button";
+    resetButton.className = "btn btn-outline-success ms-lg-auto";
+    resetButton.textContent = "Demo Daten wiederherstellen";
+    resetButton.addEventListener("click", () => demoDatenWiederherstellen(resetButton));
+    topbar.replaceChildren(titel, nav, resetButton);
+}
+
 async function api(methode, pfad, daten) {
     if (location.protocol === "file:") {
         throw new Error("Öffne die Seite neu");
@@ -13,7 +69,7 @@ async function api(methode, pfad, daten) {
     if (daten !== undefined) {
         optionen.headers = { "Content-Type": "application/json" };
         optionen.body = JSON.stringify(daten);
-    } 
+    }
     let antwort;
     try {
         antwort = await fetch(pfad, optionen);
@@ -85,3 +141,62 @@ function minutenText(minuten) {
     }
     return stunden + " h " + rest + " min";
 }
+
+function tagText(zeitstempel) {
+    return new Date(zeitstempel).toLocaleDateString("de-DE", {
+        weekday: "short",
+        day: "2-digit",
+        month: "2-digit",
+    });
+}
+
+function uhrzeitText(zeitstempel) {
+    return new Date(zeitstempel).toLocaleTimeString("de-DE", {
+        hour: "2-digit",
+        minute: "2-digit",
+    });
+}
+
+function zeitraumText(beginn, ende) {
+    if (!beginn) {
+        return "Ohne Plan";
+    }
+    let text = tagText(beginn) + " " + uhrzeitText(beginn);
+    if (ende) {
+        text += "–" + uhrzeitText(ende);
+    }
+    return text + " Uhr";
+}
+
+function minutenZwischen(beginn, ende) {
+    if (!beginn || !ende) {
+        return 0;
+    }
+    return Math.max(0, Math.round((new Date(ende) - new Date(beginn)) / 60000));
+}
+
+function zielName(lernzeit, lernziele, zwischenziele) {
+    const zwischenziel = zwischenziele.find((z) => z.id === lernzeit.zwischenziel_id);
+    if (zwischenziel) {
+        const lernziel = lernziele.find((l) => l.id === zwischenziel.lernziel_id);
+        return (lernziel ? lernziel.module_id + ": " : "") + zwischenziel.title;
+    }
+    const lernziel = lernziele.find((l) => l.id === lernzeit.lernziel_id);
+    if (lernziel) {
+        return lernziel.module_id + ": " + lernziel.title;
+    }
+    return "Ohne Lernziel";
+}
+
+async function demoDatenWiederherstellen(button) {
+    button.disabled = true;
+    try {
+        await api("POST", "/api/demo/resetdata");
+        window.location.reload();
+    } catch (error) {
+        alert(error.message);
+        button.disabled = false;
+    }
+}
+
+navigationErstellen();

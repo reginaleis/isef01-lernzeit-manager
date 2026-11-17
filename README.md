@@ -62,14 +62,14 @@ flowchart TB
 | --- | --- | --- | --- |
 | **Frontend** | [`templates/`](src/isef01_lernzeit_manager/templates/index.html) and [`static/`](src/isef01_lernzeit_manager/static/) | HTML, CSS and JavaScript | Renders pages & sends HTTP requests to  `/api/...`. |
 | **API Layer** | [`main.py`](src/isef01_lernzeit_manager/main.py) and module specific routes in [`/api`](src/isef01_lernzeit_manager/api/) | Python and FastAPI | Defines HTTP routes, converts HTTP input/output, and calls business-logic services. |
-| **Validation Schemas** | `tbd` | Pydantic | Validation and serialization for API Operations|
+| **Validation Schemas** | [`/pydantic_models`](src/isef01_lernzeit_manager/pydantic_models/) | Pydantic | Validation and serialization for API Operations|
 | **Business Logic** | [`/services`](src/isef01_lernzeit_manager/services/) | Python | Contains use cases and domain rules. No direct HTTP or SQL logic. |
 | **Data Access Layer** | [`/persistence/data_access`](src/isef01_lernzeit_manager/persistence/data_access/) | Python | Translates domain operations into database queries. |
 | **Database** | [`/persistence`](src/isef01_lernzeit_manager/persistence/) | SqlAlchemy & Sqlite | Configuration of database. |
 
 ### Database schema
 
-The database design is defined in [`datenbank_entwurf.sql`](docs/database/datenbank_entwurf.sql).
+The database models are implemented in [`tables.py`](src/isef01_lernzeit_manager/persistence/tables.py).
 
 ```mermaid
 erDiagram
@@ -86,6 +86,7 @@ erDiagram
         INTEGER ects
         TEXT start_date
         TEXT end_date
+        TEXT completed_on
         INTEGER accumulated_study_time
         TEXT status
     }
@@ -110,7 +111,7 @@ erDiagram
         TEXT actual_start_time
         TEXT actual_end_time
         INTEGER duration
-        INTEGER status
+        TEXT status
     }
 ```
 

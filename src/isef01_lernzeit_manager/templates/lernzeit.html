@@ -27,7 +27,7 @@
                         <section v-if="laufend" class="card overview-card mb-4" aria-labelledby="uhr-titel">
                             <div class="card-body text-center">
                                 <h2 id="uhr-titel" class="h5">Lernsession läuft</h2>
-                                <p class="mb-0">{{ zielName(laufend, lernziele, zwischenziele) }}</p>
+                                <p class="mb-0 titel-gekuerzt" :title="zielName(laufend, lernziele, zwischenziele)">{{ zielName(laufend, lernziele, zwischenziele) }}</p>
                                 <p class="display-2 fw-bold font-monospace mb-0" role="timer">{{ uhrText }}</p>
                                 <p class="text-secondary">{{ fortschrittText }}</p>
                                 <div class="d-flex flex-wrap justify-content-center gap-2">
@@ -97,7 +97,8 @@
                                         </select>
                                     </div>
                                     <div class="col-md-4">
-                                        <label for="nt-datum" class="form-label">Datum</label>                                        <input id="nt-datum" type="date" class="form-control" v-model="nachtrag.datum"
+                                        <label for="nt-datum" class="form-label">Datum</label>                                        
+                                        <input id="nt-datum" type="date" class="form-control" v-model="nachtrag.datum"
                                                :max="heute()" required>
                                     </div>
                                     <div class="col-6 col-md-4">
@@ -109,7 +110,8 @@
                                         <input id="nt-bis" type="time" class="form-control" v-model="nachtrag.bis" required>
                                     </div>
                                     <div class="col-12 d-flex flex-wrap align-items-center gap-3 mt-3">
-                                        <button type="submit" class="btn btn-success">Lernzeit speichern</button>                                        <span v-if="nachtragMinuten > 0" class="text-secondary">
+                                        <button type="submit" class="btn btn-success">Lernzeit speichern</button>                                        
+                                        <span v-if="nachtragMinuten > 0" class="text-secondary">
                                             Dauer: <strong>{{ minutenText(nachtragMinuten) }}</strong>
                                         </span>
                                     </div>
@@ -130,7 +132,7 @@
                                 <ul v-else class="list-group list-group-flush">
                                     <li v-for="zeit in zuletztGelernt" :key="zeit.id"
                                         class="list-group-item px-0 d-flex align-items-center gap-3">
-                                        <span class="me-auto">
+                                        <span class="me-auto titel-umbruch">
                                             {{ zeitraumText(zeit.actual_start_time, zeit.actual_end_time) }}
                                             <br><small class="text-secondary">{{ zielName(zeit, lernziele, zwischenziele) }}</small>
                                         </span>
@@ -153,7 +155,7 @@
                         </p>
                         <div v-for="block in geplanteBloecke" :key="block.id" class="card lernblock mb-2">
                             <div class="card-body py-2 d-flex justify-content-between align-items-center gap-2">
-                                <div>
+                                <div class="titel-umbruch">
                                     <strong>{{ zeitraumText(block.planned_start_time, block.planned_end_time) }}</strong>
                                     <br>{{ zielName(block, lernziele, zwischenziele) }}
                                     <br>

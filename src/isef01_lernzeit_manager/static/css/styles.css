@@ -267,3 +267,114 @@ main[v-cloak] > * {
   border-left: 0.4rem solid #5bb5a9;
   background: #eef8f6;
 }
+.titel-umbruch, .titel-gekuerzt {
+  overflow-wrap: anywhere;
+}
+.titel-gekuerzt {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+.titel-spalte {
+  min-width: 12rem;
+}
+.modul-spalte {
+  min-width: 6rem;
+}
+/* Monatsplan  */
+.kalender {
+  width: 100%;
+  table-layout: fixed;
+}
+.kalender th {
+  padding: 0.25rem;
+  color: #66717c;
+  font-size: 0.85rem;
+  text-align: center;
+}
+.kalender td {
+  padding: 0;
+  border: 1px solid #e3e9e5;
+  vertical-align: top;
+}
+.kalender-leer {
+  background: #f8faf8;
+}
+.kalender-tag {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  width: 100%;
+  min-height: 7rem;
+  padding: 0.25rem;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+}
+.kalender-tag:hover {
+  background: #e9ebee;
+}
+.kalender-tag--gewaehlt, .kalender-tag--gewaehlt:hover {
+  background: #e7efea;
+  box-shadow: inset 0 0 0 2px #2e8258;
+}
+.kalender-tageszahl {
+  display: grid;
+  width: 1.6rem;
+  height: 1.6rem;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.kalender-tag--heute .kalender-tageszahl {
+  background: #2b8156;
+  color: #fff;
+}
+.kalender-eintrag {
+  display: block;
+  min-height: 0.4rem;
+  padding: 0 0.3rem;
+  overflow: hidden;
+  border-left: 0.2rem solid transparent;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.kalender-eintrag--geplant, .kalender-eintrag--laeuft {
+  border-left-color: #55b4a8;
+  background: #e6f3f0;
+  color: #18212b;
+}
+.kalender-eintrag--gelernt {
+  border-left-color: #2d8358;
+  background: #2d8358;
+  color: #fff;
+}
+.kalender-eintrag--verpasst {
+  border-left-color: #e0a800;
+  background: #fff3cd;
+  color: #664d03;
+}
+.kalender-eintrag--frist {
+  border-left-color: #c74646;
+  background: #fceaea;
+  color: #8d2929;
+}
+.kalender-mehr {
+  color: #66717c;
+  font-size: 0.75rem;
+}
+@media (max-width: 767.98px) {
+  .kalender-tag {
+    min-height: 4.5rem;
+  }
+  /* Für kleine Bildschirme */
+  .kalender-tag .kalender-eintrag {
+    padding: 0;
+  }
+}

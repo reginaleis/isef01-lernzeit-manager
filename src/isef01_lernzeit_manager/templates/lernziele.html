@@ -67,7 +67,7 @@
                                         @click="abbrechen">Abbrechen</button>
                             </div>
                         </form>
-                        <p class="text-success mt-3 mb-0" role="status" aria-live="polite">{{ rueckmeldung }}</p>
+                        <p class="text-success titel-umbruch mt-3 mb-0" role="status" aria-live="polite">{{ rueckmeldung }}</p>
                     </div>
                 </section>
 
@@ -93,11 +93,14 @@
                                 </thead>
                                 <tbody>
                                     <tr v-for="ziel in lernziele" :key="ziel.id">
-                                        <td>
-                                            {{ ziel.title }}
-                                            <br><small class="text-secondary">{{ ziel.exam_type }}</small>
+                                        <!-- BUG FIX Längere Titel werden nach 3 Zeilen gekürzt.-->
+                                        <td class="titel-spalte">
+                                            <span class="titel-gekuerzt" :title="ziel.title">{{ ziel.title }}</span>
+                                            <small class="text-secondary">{{ ziel.exam_type }}</small>
                                         </td>
-                                        <td>{{ ziel.module_id }}</td>
+                                        <td class="modul-spalte">
+                                            <span class="titel-gekuerzt" :title="ziel.module_id">{{ ziel.module_id }}</span>
+                                        </td>
                                         <td>{{ datumText(ziel.start_date) }}</td>
                                         <td>{{ datumText(ziel.end_date) }}</td>
                                         <td class="text-nowrap">{{ minutenText(ziel.accumulated_study_time) }}</td>
@@ -133,7 +136,7 @@
                 <section v-if="gewaehltesLernziel" id="zwischenziele" class="card mt-4"
                          aria-labelledby="zwischenziele-titel">
                     <div class="card-body">
-                        <h2 id="zwischenziele-titel" class="h5">
+                        <h2 id="zwischenziele-titel" class="h5 titel-umbruch">
                             Zwischenziele für „{{ gewaehltesLernziel.title }}“
                         </h2>
                         <p class="text-secondary">
@@ -185,7 +188,9 @@
                                 </thead>
                                 <tbody>
                                     <tr v-for="zwischenziel in zwischenzieleVon(gewaehltesLernziel.id)" :key="zwischenziel.id">
-                                        <td>{{ zwischenziel.title }}</td>
+                                        <td class="titel-spalte">
+                                            <span class="titel-gekuerzt" :title="zwischenziel.title">{{ zwischenziel.title }}</span>
+                                        </td>
                                         <td>{{ datumText(zwischenziel.start_date) }}</td>
                                         <td>{{ datumText(zwischenziel.end_date) }}</td>
                                         <td class="text-nowrap">{{ minutenText(zwischenziel.accumulated_study_time) }}</td>

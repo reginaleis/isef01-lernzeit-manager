@@ -216,7 +216,8 @@
                                         <dl class="abschluss-details mb-0">
                                             <div><dt class="small text-secondary fw-normal lh-1">Prüfung</dt><dd class="fw-semibold">{{ ziel.exam_type || "–" }}</dd></div>
                                             <div><dt class="small text-secondary fw-normal lh-1">ECTS</dt><dd class="fw-semibold">{{ ziel.ects ?? "–" }}</dd></div>
-                                            <div><dt class="small text-secondary fw-normal lh-1">Lernzeit</dt><dd class="fw-semibold">{{ minutenText(ziel.accumulated_study_time) }}</dd></div>
+                                            <div><dt class="small text-secondary fw-normal lh-1">Geplante Lernzeit</dt><dd class="fw-semibold">{{ minutenText(geplanteLernzeitFuer(ziel.id)) }}</dd></div>
+                                            <div><dt class="small text-secondary fw-normal lh-1">Aufgewendete Lernzeit</dt><dd class="fw-semibold">{{ minutenText(ziel.accumulated_study_time) }}</dd></div>
                                             <div><dt class="small text-secondary fw-normal lh-1">Zwischenziele</dt><dd class="fw-semibold">{{ zwischenzieleFuer(ziel.id).length }}</dd></div>
                                             <div><dt class="small text-secondary fw-normal lh-1">Abschluss am</dt><dd class="fw-semibold">{{ datumText(ziel.completed_on) }}</dd></div>
                                         </dl>
@@ -381,6 +382,16 @@
                 },
                 zwischenzieleFuer(lernzielId) {
                     return this.zwischenziele.filter(zwischenziel => zwischenziel.lernziel_id === lernzielId);
+                },
+                geplanteLernzeitFuer(lernzielId) {
+                    const zwischenzielIds = this.zwischenzieleFuer(lernzielId).map(zwischenziel => zwischenziel.id);
+                    return this.lernzeiten
+                        .filter(zeit => zeit.lernziel_id === lernzielId
+                            || zwischenzielIds.includes(zeit.zwischenziel_id))
+                        .reduce((summe, zeit) => summe + minutenZwischen(
+                            zeit.planned_start_time,
+                            zeit.planned_end_time,
+                        ), 0);
                 },
                 tageBis(datum) {
                     if (!datum) {

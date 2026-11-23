@@ -132,6 +132,11 @@ def read_halbjahresplan() -> HTMLResponse:
     return HTMLResponse((PACKAGE_DIR / "templates" / "halbjahresplan.html").read_text(encoding="utf-8"))
 
 
+@app.get("/monatsplan.html")
+def read_monatsplan() -> HTMLResponse:
+    return HTMLResponse((PACKAGE_DIR / "templates" / "monatsplan.html").read_text(encoding="utf-8"))
+
+
 @app.get("/lernzeit.html")
 def read_lernzeit() -> HTMLResponse:
     return HTMLResponse((PACKAGE_DIR / "templates" / "lernzeit.html").read_text(encoding="utf-8"))

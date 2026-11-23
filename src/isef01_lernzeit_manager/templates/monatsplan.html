@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+          integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+          crossorigin="anonymous">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <title>Lernzeit Manager</title>
+</head>
+<body>
+    <header class="topbar p-3"></header>
+    <div class="container-fluid">
+        <div class="row min-vh-100">
+            <main id="app" class="col-12 p-3 p-lg-4" v-cloak>
+                <header class="mb-4">
+                    <p class="small text-success fw-semibold mb-1">KALENDER</p>
+                    <h1>Monatsplan</h1>
+                    <p>Übersicht über deinen Semester.</p>
+                </header>
+                <div v-if="fehler" class="alert alert-danger" role="alert">{{ fehler }}</div>
+                <div class="row g-4">
+                    <div class="col-lg-8">
+                        <section class="card overview-card" aria-labelledby="monat-titel">
+                            <div class="card-body">
+                                <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                                    <h2 id="monat-titel" class="h4 mb-0 me-auto" aria-live="polite">{{ monatsname }}</h2>
+                                    <div class="d-flex gap-2">
+                                        <button type="button" class="btn btn-outline-success btn-sm"
+                                                @click="monatWechseln(-1)">‹ Zurück</button>
+                                        <button type="button" class="btn btn-outline-success btn-sm"
+                                                @click="zuHeute">Heute</button>
+                                        <button type="button" class="btn btn-outline-success btn-sm"
+                                                @click="monatWechseln(1)">Weiter ›</button>
+                                    </div>
+                                </div>
+                                <p class="text-secondary">
+                                    Geplant: <strong>{{ minutenText(geplanteMinutenImMonat) }}</strong>
+                                    · Gelernt: <strong>{{ minutenText(gelernteMinutenImMonat) }}</strong>
+                                </p>
+                                <table class="kalender">
+                                    <thead>
+                                        <tr>
+                                            <th v-for="tag in wochentage" :key="tag" scope="col">{{ tag }}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="(woche, zeile) in wochen" :key="zeile">
+                                            <td v-for="(datum, spalte) in woche" :key="spalte"
+                                                :class="{ 'kalender-leer': !datum }">
+                                                <button v-if="datum" type="button" class="kalender-tag"
+                                                        :class="{
+                                                            'kalender-tag--heute': datum === heute(),
+                                                            'kalender-tag--gewaehlt': datum === gewaehlterTag,
+                                                        }"
+                                                        :aria-pressed="datum === gewaehlterTag"
+                                                        :aria-label="tagBeschreibung(datum)"
+                                                        @click="tagWaehlen(datum)">
+                                                    <span class="kalender-tageszahl">{{ tagImMonat(datum) }}</span>
+                                                    <span v-for="eintrag in sichtbareEintraege(datum)"
+                                                          :key="eintrag.schluessel" class="kalender-eintrag"
+                                                          :class="'kalender-eintrag--' + eintrag.art">
+                                                        <span class="d-none d-md-inline">{{ eintrag.kurz }}</span>
+                                                    </span>
+                                                    <span v-if="weitereEintraege(datum) > 0" class="kalender-mehr">
+                                                        +{{ weitereEintraege(datum) }}<span class="d-none d-md-inline"> weitere</span>
+                                                    </span>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <ul class="list-unstyled d-flex flex-wrap gap-2 mt-3 mb-0" aria-label="Legende">
+                                    <li v-for="(text, art) in legende" :key="art" class="kalender-eintrag"
+                                        :class="'kalender-eintrag--' + art">{{ text }}</li>
+                                </ul>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <section class="card overview-card mb-4" aria-labelledby="tag-titel">
+                            <div class="card-body">
+                                <h2 id="tag-titel" class="h5">{{ tagLang(gewaehlterTag) }}</h2>
+                                <p v-if="eintraegeAmGewaehltenTag.length === 0" class="text-secondary mb-0">
+                                    Für diesen Tag ist noch nichts geplant.
+                                </p>
+                                <ul v-else class="list-group list-group-flush">
+                                    <li v-for="eintrag in eintraegeAmGewaehltenTag" :key="eintrag.schluessel"
+                                        class="list-group-item px-0 titel-umbruch">
+                                        <span class="badge" :class="'kalender-eintrag--' + eintrag.art">
+                                            {{ artTexte[eintrag.art] }}
+                                        </span>
+                                        <strong v-if="eintrag.zeitText" class="ms-1">{{ eintrag.zeitText }}</strong>
+                                        <span class="titel-gekuerzt" :title="eintrag.name">{{ eintrag.name }}</span>
+                                        <small class="text-secondary">{{ eintrag.hinweis }}</small>
+                                        <div v-if="istAenderbar(eintrag)"
+                                             class="d-flex gap-2 mt-2">
+                                            <button type="button" class="btn btn-outline-success btn-sm"
+                                                    @click="bearbeiten(eintrag.lernzeit)">
+                                                {{ eintrag.art === "verpasst" ? "Verschieben" : "Bearbeiten" }}
+                                            </button>
+                                            <button type="button" class="btn btn-outline-danger btn-sm"
+                                                    @click="loeschen(eintrag)">Löschen</button>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </section>
+
+                        <section class="card overview-card" aria-labelledby="formular-titel">
+                            <div class="card-body">
+                                <h2 id="formular-titel" class="h5">
+                                    {{ bearbeiteId ? "Lernblock bearbeiten" : "Lernblock planen" }}
+                                </h2>
+                                <p v-if="!laedt && waehlbareLernziele.length === 0" class="text-secondary mb-0">
+                                    Erstelle zuerst ein Lernziel, damit du Lernblöcke planen kannst.
+                                    <a href="/lernziele.html">Zu den Lernzielen</a>
+                                </p>
+                                <form v-else class="row g-2" @submit.prevent="speichern">
+                                    <div class="col-12">
+                                        <label for="block-lernziel" class="form-label">Lernziel</label>
+                                        <select id="block-lernziel" class="form-select" v-model="formular.lernziel_id"
+                                                @change="formular.zwischenziel_id = ''" required>
+                                            <option value="">Bitte auswählen</option>
+                                            <option v-for="ziel in waehlbareLernziele" :key="ziel.id" :value="ziel.id">
+                                                {{ ziel.module_id }}: {{ ziel.title }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="block-zwischenziel" class="form-label">Zwischenziel (optional)</label>
+                                        <select id="block-zwischenziel" class="form-select"
+                                                v-model="formular.zwischenziel_id">
+                                            <option value="">Keins</option>
+                                            <option v-for="ziel in waehlbareZwischenziele" :key="ziel.id" :value="ziel.id">
+                                                {{ ziel.title }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="block-datum" class="form-label">Datum</label>
+                                        <input id="block-datum" type="date" class="form-control"
+                                               v-model="formular.datum" required>
+                                    </div>
+                                    <div class="col-6">
+                                        <label for="block-von" class="form-label">Von</label>
+                                        <input id="block-von" type="time" class="form-control"
+                                               v-model="formular.von" required>
+                                    </div>
+                                    <div class="col-6">
+                                        <label for="block-bis" class="form-label">Bis</label>
+                                        <input id="block-bis" type="time" class="form-control"
+                                               v-model="formular.bis" required>
+                                    </div>
+                                    <div class="col-12 d-flex flex-wrap align-items-center gap-2 mt-3">
+                                        <button type="submit" class="btn btn-success">Lernblock speichern</button>
+                                        <button v-if="bearbeiteId" type="button" class="btn btn-outline-secondary"
+                                                @click="abbrechen">Abbrechen</button>
+                                        <span v-if="formularMinuten > 0" class="text-secondary">
+                                            Dauer: <strong>{{ minutenText(formularMinuten) }}</strong>
+                                        </span>
+                                    </div>
+                                </form>
+                                <p v-if="formularFehler" class="text-danger mt-2 mb-0" role="alert">{{ formularFehler }}</p>
+                                <p v-if="rueckmeldung" class="text-success mt-2 mb-0" role="status">{{ rueckmeldung }}</p>
+                                <p class="small text-secondary mt-3 mb-0">
+                                    Einen geplanten Lernblock startest du auf der Seite
+                                    <a href="/lernzeit.html">Lernzeit</a>.
+                                </p>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.5.22/dist/vue.global.prod.js"></script>
+    <script src="/static/js/gemeinsam.js"></script>
+    <script>
+        const WOCHENTAGE = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
+        const EINTRAEGE_PRO_KALENDERTAG = 3;
+        const OFFENE_ARTEN = ["geplant", "verpasst"];
+        const ART_TEXT = {
+            geplant: "Geplant",
+            laeuft: "Läuft gerade",
+            verpasst: "Verpasst",
+            gelernt: "Gelernt",
+            frist: "Frist",
+        };
+        const LEGENDE = {
+            geplant: "Geplanter Lernblock",
+            gelernt: "Gelernt",
+            verpasst: "Verpasst",
+            frist: "Frist (Zieldatum)",
+        };
+
+        function leeresFormular(datum) {
+            return { lernziel_id: "", zwischenziel_id: "", datum: datum, von: "", bis: "" };
+        }
+
+        function zweistellig(zahl) {
+            return String(zahl).padStart(2, "0");
+        }
+        function uhrzeitFeld(zeitstempel) {
+            const zeit = new Date(zeitstempel);
+            return zweistellig(zeit.getHours()) + ":" + zweistellig(zeit.getMinutes());
+        }
+        function tagAlsDatum(isoText) {
+            return new Date(isoText + "T12:00:00");
+        }
+        function tagLang(isoText) {
+            return tagAlsDatum(isoText).toLocaleDateString("de-DE", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+            });
+        }
+
+        function monatsWochen(jahr, monat) {
+            const leereFelderDavor = (new Date(jahr, monat, 1).getDay() + 6) % 7;
+            const tageImMonat = new Date(jahr, monat + 1, 0).getDate();
+            const felder = new Array(leereFelderDavor).fill(null);
+            for (let tag = 1; tag <= tageImMonat; tag++) {
+                felder.push(isoDatum(new Date(jahr, monat, tag)));
+            }
+            while (felder.length % 7 !== 0) {
+                felder.push(null);
+            }
+            const wochen = [];
+            for (let anfang = 0; anfang < felder.length; anfang += 7) {
+                wochen.push(felder.slice(anfang, anfang + 7));
+            }
+            return wochen;
+        }
+        function lernzeitAngaben(zeit, jetzt) {
+            if (zeit.status === "abgeschlossen") {
+                return {
+                    art: "gelernt",
+                    beginn: zeit.actual_start_time,
+                    ende: zeit.actual_end_time,
+                    minuten: zeit.duration,
+                    hinweis: "Gelernt: " + minutenText(zeit.duration),
+                };
+            }
+            if (zeit.actual_start_time) {
+                return {
+                    art: "laeuft",
+                    beginn: zeit.actual_start_time,
+                    ende: null,
+                    minuten: 0,
+                    hinweis: "Die Lernsession läuft gerade.",
+                };
+            }
+            const geplanteMinuten = minutenZwischen(zeit.planned_start_time, zeit.planned_end_time);
+            const verpasst = new Date(zeit.planned_end_time).getTime() < jetzt;
+            return {
+                art: verpasst ? "verpasst" : "geplant",
+                beginn: zeit.planned_start_time,
+                ende: zeit.planned_end_time,
+                minuten: geplanteMinuten,
+                hinweis: "Geplant: " + minutenText(geplanteMinuten) + (verpasst ? " – nicht gestartet" : ""),
+            };
+        }
+        function lernzeitEintrag(zeit, name, jetzt) {
+            const angaben = lernzeitAngaben(zeit, jetzt);
+            if (!angaben.beginn) {
+                return null;
+            }
+            const beginn = new Date(angaben.beginn);
+            const bisText = angaben.ende ? "–" + uhrzeitText(angaben.ende) : "";
+            return {
+                schluessel: "lernzeit-" + zeit.id,
+                art: angaben.art,
+                datum: isoDatum(beginn),
+                zeitpunkt: beginn.getTime(),
+                zeitText: uhrzeitText(angaben.beginn) + bisText + " Uhr",
+                kurz: uhrzeitText(angaben.beginn) + " " + name,
+                name: name,
+                hinweis: angaben.hinweis,
+                minuten: angaben.minuten,
+                lernzeit: zeit,
+            };
+        }
+
+        function hatOffeneFrist(ziel) {
+            return ziel.end_date && ziel.status !== "completed";
+        }
+        function fristEintrag(schluessel, datum, name, hinweis) {
+            return {
+                schluessel: schluessel,
+                art: "frist",
+                datum: datum,
+                zeitpunkt: 0,
+                zeitText: "",
+                kurz: "Frist: " + name,
+                name: name,
+                hinweis: hinweis,
+                minuten: 0,
+            };
+        }
+        function fristEintraege(lernziele, zwischenziele) {
+            const fristen = [];
+            for (const lernziel of lernziele) {
+                if (hatOffeneFrist(lernziel)) {
+                    fristen.push(fristEintrag(
+                        "lernziel-" + lernziel.id,
+                        lernziel.end_date,
+                        lernziel.module_id + ": " + lernziel.title,
+                        "Zieldatum des Lernziels",
+                    ));
+                }
+            }
+            for (const zwischenziel of zwischenziele) {
+                if (hatOffeneFrist(zwischenziel)) {
+                    const lernziel = lernziele.find((ziel) => ziel.id === zwischenziel.lernziel_id);
+                    const modul = lernziel ? lernziel.module_id + ": " : "";
+                    fristen.push(fristEintrag(
+                        "zwischenziel-" + zwischenziel.id,
+                        zwischenziel.end_date,
+                        modul + zwischenziel.title,
+                        "Zieldatum des Zwischenziels",
+                    ));
+                }
+            }
+            return fristen;
+        }
+        const app = Vue.createApp({
+            data() {
+                const jetzt = new Date();
+                return {
+                    lernziele: [],
+                    zwischenziele: [],
+                    lernzeiten: [],
+                    jahr: jetzt.getFullYear(),
+                    monat: jetzt.getMonth(),
+                    gewaehlterTag: heute(),
+                    formular: leeresFormular(heute()),
+                    bearbeiteId: null,
+                    formularFehler: "",
+                    rueckmeldung: "",
+                    fehler: "",
+                    laedt: true,
+                    jetzt: Date.now(),
+                    wochentage: WOCHENTAGE,
+                    artTexte: ART_TEXT,
+                    legende: LEGENDE,
+                };
+            },
+            computed: {
+                monatsname() {
+                    return new Date(this.jahr, this.monat, 1).toLocaleDateString("de-DE", {
+                        month: "long",
+                        year: "numeric",
+                    });
+                },
+                wochen() {
+                    return monatsWochen(this.jahr, this.monat);
+                },
+                eintraege() {
+                    const liste = [];
+                    for (const zeit of this.lernzeiten) {
+                        const name = zielName(zeit, this.lernziele, this.zwischenziele);
+                        const eintrag = lernzeitEintrag(zeit, name, this.jetzt);
+                        if (eintrag) {
+                            liste.push(eintrag);
+                        }
+                    }
+                    return liste.concat(fristEintraege(this.lernziele, this.zwischenziele));
+                },
+                eintraegeNachTag() {
+                    const tage = {};
+                    for (const eintrag of this.eintraege) {
+                        if (!tage[eintrag.datum]) {
+                            tage[eintrag.datum] = [];
+                        }
+                        tage[eintrag.datum].push(eintrag);
+                    }
+                    for (const datum in tage) {
+                        tage[datum].sort((a, b) => a.zeitpunkt - b.zeitpunkt);
+                    }
+                    return tage;
+                },
+                eintraegeAmGewaehltenTag() {
+                    return this.eintraegeAm(this.gewaehlterTag);
+                },
+                geplanteMinutenImMonat() {
+                    return this.minutenImMonat(OFFENE_ARTEN);
+                },
+                gelernteMinutenImMonat() {
+                    return this.minutenImMonat(["gelernt"]);
+                },
+                waehlbareLernziele() {
+                    return this.lernziele.filter(
+                        (ziel) => ziel.status !== "completed" || ziel.id === this.formular.lernziel_id,
+                    );
+                },
+                waehlbareZwischenziele() {
+                    return this.zwischenziele.filter(
+                        (ziel) =>
+                            ziel.lernziel_id === this.formular.lernziel_id
+                            && (ziel.status !== "completed" || ziel.id === this.formular.zwischenziel_id),
+                    );
+                },
+                formularMinuten() {
+                    if (!this.formular.datum || !this.formular.von || !this.formular.bis) {
+                        return 0;
+                    }
+                    return minutenZwischen(
+                        this.formularZeitpunkt(this.formular.von),
+                        this.formularZeitpunkt(this.formular.bis),
+                    );
+                },
+            },
+            methods: {
+                heute,
+                minutenText,
+                tagLang,
+
+                eintraegeAm(datum) {
+                    return this.eintraegeNachTag[datum] || [];
+                },
+                sichtbareEintraege(datum) {
+                    return this.eintraegeAm(datum).slice(0, EINTRAEGE_PRO_KALENDERTAG);
+                },
+                weitereEintraege(datum) {
+                    return this.eintraegeAm(datum).length - EINTRAEGE_PRO_KALENDERTAG;
+                },
+                tagImMonat(datum) {
+                    return Number(datum.slice(8));
+                },
+                tagBeschreibung(datum) {
+                    const anzahl = this.eintraegeAm(datum).length;
+                    if (anzahl === 0) {
+                        return tagLang(datum) + ", keine Einträge";
+                    }
+                    return tagLang(datum) + ", " + anzahl + (anzahl === 1 ? " Eintrag" : " Einträge");
+                },
+                istAenderbar(eintrag) {
+                    return OFFENE_ARTEN.includes(eintrag.art);
+                },
+                minutenImMonat(arten) {
+                    const monat = isoDatum(new Date(this.jahr, this.monat, 1)).slice(0, 7);
+                    let summe = 0;
+                    for (const eintrag of this.eintraege) {
+                        if (eintrag.datum.startsWith(monat) && arten.includes(eintrag.art)) {
+                            summe += eintrag.minuten;
+                        }
+                    }
+                    return summe;
+                },
+
+                monatWechseln(schritt) {
+                    const ziel = new Date(this.jahr, this.monat + schritt, 1);
+                    this.jahr = ziel.getFullYear();
+                    this.monat = ziel.getMonth();
+                },
+                tagWaehlen(datum) {
+                    const tag = tagAlsDatum(datum);
+                    this.jahr = tag.getFullYear();
+                    this.monat = tag.getMonth();
+                    this.gewaehlterTag = datum;
+                    this.formular.datum = datum;
+                },
+                zuHeute() {
+                    this.tagWaehlen(heute());
+                },
+
+                formularZeitpunkt(uhrzeit) {
+                    return new Date(this.formular.datum + "T" + uhrzeit);
+                },
+                async laden() {
+                    try {
+                        const [lernziele, zwischenziele, lernzeiten] = await Promise.all([
+                            api("GET", "/api/lernziele/"),
+                            api("GET", "/api/zwischenziele/"),
+                            api("GET", "/api/lernzeiten/"),
+                        ]);
+                        this.lernziele = lernziele;
+                        this.zwischenziele = zwischenziele;
+                        this.lernzeiten = lernzeiten;
+                    } catch (error) {
+                        this.fehler = error.message;
+                    } finally {
+                        this.laedt = false;
+                    }
+                },
+                async speichern() {
+                    this.fehler = "";
+                    this.formularFehler = "";
+                    this.rueckmeldung = "";
+                    const beginn = this.formularZeitpunkt(this.formular.von);
+                    const ende = this.formularZeitpunkt(this.formular.bis);
+                    if (ende <= beginn) {
+                        this.formularFehler = "Das Ende muss nach dem Beginn liegen.";
+                        return;
+                    }
+                    if (ende.getTime() <= Date.now()) {
+                        this.formularFehler = "Der Lernblock liegt in der Vergangenheit. Wähle einen späteren Zeitpunkt.";
+                        return;
+                    }
+                    const hatZwischenziel = Boolean(this.formular.zwischenziel_id);
+                    const daten = {
+                        planned_start_time: beginn.toISOString(),
+                        planned_end_time: ende.toISOString(),
+                        lernziel_id: hatZwischenziel ? null : this.formular.lernziel_id,
+                        zwischenziel_id: hatZwischenziel ? this.formular.zwischenziel_id : null,
+                    };
+                    const datum = this.formular.datum;
+                    try {
+                        if (this.bearbeiteId) {
+                            await api("PUT", "/api/lernzeiten/" + this.bearbeiteId, daten);
+                        } else {
+                            await api("POST", "/api/lernzeiten/", daten);
+                        }
+                        this.rueckmeldung = "Lernblock am " + datumText(datum) + " gespeichert.";
+                        this.abbrechen();
+                        this.tagWaehlen(datum);
+                    } catch (error) {
+                        this.formularFehler = error.message;
+                    }
+                    await this.laden();
+                },
+                bearbeiten(lernzeit) {
+                    const zwischenziel = this.zwischenziele.find((ziel) => ziel.id === lernzeit.zwischenziel_id);
+                    this.formularFehler = "";
+                    this.rueckmeldung = "";
+                    this.bearbeiteId = lernzeit.id;
+                    this.formular = {
+                        lernziel_id: zwischenziel ? zwischenziel.lernziel_id : (lernzeit.lernziel_id || ""),
+                        zwischenziel_id: zwischenziel ? zwischenziel.id : "",
+                        datum: isoDatum(new Date(lernzeit.planned_start_time)),
+                        von: uhrzeitFeld(lernzeit.planned_start_time),
+                        bis: uhrzeitFeld(lernzeit.planned_end_time),
+                    };
+                    document.getElementById("block-datum").focus();
+                },
+                abbrechen() {
+                    this.bearbeiteId = null;
+                    this.formular = leeresFormular(this.gewaehlterTag);
+                },
+                async loeschen(eintrag) {
+                    const frage = "Lernblock am " + tagLang(eintrag.datum) + ", " + eintrag.zeitText + " wirklich löschen?";
+                    if (!confirm(frage)) {
+                        return;
+                    }
+                    this.fehler = "";
+                    this.rueckmeldung = "";
+                    try {
+                        await api("DELETE", "/api/lernzeiten/" + eintrag.lernzeit.id);
+                        if (eintrag.lernzeit.id === this.bearbeiteId) {
+                            this.abbrechen();
+                        }
+                    } catch (error) {
+                        this.fehler = error.message;
+                    }
+                    await this.laden();
+                },
+            },
+            mounted() {
+                this.laden();
+                setInterval(() => {
+                    this.jetzt = Date.now();
+                }, 60000);
+            },
+        });
+        app.mount("#app");
+    </script>
+</body>
+</html>

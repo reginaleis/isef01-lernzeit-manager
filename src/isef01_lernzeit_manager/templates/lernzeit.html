@@ -26,11 +26,13 @@
                         <!-- IF Lernsession, steht hier die Uhr. ELSE ist hier das Formular für eine Lernsession. -->
                         <section v-if="laufend" class="card overview-card mb-4" aria-labelledby="uhr-titel">
                             <div class="card-body text-center">
-                                <h2 id="uhr-titel" class="h5">Lernsession läuft</h2>
+                                <h2 id="uhr-titel" class="h5">{{ pausiertSeit ? "Lernsession pausiert" : "Lernsession läuft" }}</h2>                     
                                 <p class="mb-0 titel-gekuerzt" :title="zielName(laufend, lernziele, zwischenziele)">{{ zielName(laufend, lernziele, zwischenziele) }}</p>
                                 <p class="display-2 fw-bold font-monospace mb-0" role="timer">{{ uhrText }}</p>
                                 <p class="text-secondary">{{ fortschrittText }}</p>
                                 <div class="d-flex flex-wrap justify-content-center gap-2">
+                                    <button v-if="pausiertSeit" type="button" class="btn btn-outline-success" @click="fortsetzen">Fortsetzen</button>
+                                    <button v-else type="button" class="btn btn-outline-success" @click="pausieren">Pause</button>
                                     <button type="button" class="btn btn-success" @click="beenden"
                                             :disabled="sekunden < 1">Beenden und speichern</button>
                                     <button type="button" class="btn btn-outline-danger" @click="verwerfen">Verwerfen</button>
@@ -179,7 +181,26 @@
         function leererNachtrag() {
             return { lernziel_id: "", zwischenziel_id: "", datum: heute(), von: "", bis: "" };
         }
-
+        function pauseLesen(lernzeitId) {
+            try {
+                const pause = JSON.parse(localStorage.getItem("lernzeitPause"));
+                if (pause && pause.id === lernzeitId) {
+                    return pause.seit;
+                }
+            } catch (error) {
+            }
+            return null;
+        }
+        function pauseMerken(pause) {
+            try {
+                if (pause) {
+                    localStorage.setItem("lernzeitPause", JSON.stringify(pause));
+                } else {
+                    localStorage.removeItem("lernzeitPause");
+                }
+            } catch (error) {
+            }
+        }
         const app = Vue.createApp({
             data() {
                 return {
@@ -189,8 +210,7 @@
                     auswahl: { lernziel_id: "", zwischenziel_id: "" }, 
                     nachtrag: leererNachtrag(),
                     nachtragFehler: "",
-                    jetzt: Date.now(),
-                    fehler: "",
+                    pausiertSeit: null,                    fehler: "",
                     rueckmeldung: "",
                 };
             },
@@ -204,7 +224,7 @@
                         return 0;
                     }
                     const beginn = new Date(this.laufend.actual_start_time).getTime();
-                    return Math.max(0, Math.floor((this.jetzt - beginn) / 1000));
+                    return Math.max(0, Math.floor(((this.pausiertSeit || this.jetzt) - beginn) / 1000));     
                 },
                 planMinuten() {
                     if (!this.laufend) {
@@ -274,6 +294,11 @@
                         this.lernziele = await api("GET", "/api/lernziele/");
                         this.zwischenziele = await api("GET", "/api/zwischenziele/");
                         this.lernzeiten = await api("GET", "/api/lernzeiten/");
+                        if (!this.laufend) {
+                            this.pauseSetzen(null);
+                        } else if (!this.pausiertSeit) {
+                            this.pausiertSeit = pauseLesen(this.laufend.id);
+                        }
                     } catch (error) {
                         this.fehler = error.message;
                     }
@@ -306,11 +331,34 @@
                     }
                     await this.laden();
                 },
+                    pauseSetzen(seit) {
+                    this.pausiertSeit = seit;
+                    pauseMerken(seit ? { id: this.laufend.id, seit: seit } : null);
+                },
+                pausieren() {
+                    this.pauseSetzen(Date.now());
+                },
+                // pausenBerechnung 
+                async fortsetzen() {
+                    this.fehler = "";
+                    const pausenDauer = Date.now() - this.pausiertSeit;
+                    const alterBeginn = new Date(this.laufend.actual_start_time).getTime();
+                    const neuerBeginn = new Date(alterBeginn + pausenDauer).toISOString();
+                    try {
+                        await api("PUT", "/api/lernzeiten/" + this.laufend.id, { actual_start_time: neuerBeginn });
+                        this.laufend.actual_start_time = neuerBeginn;
+                        this.jetzt = Date.now();
+                        this.pauseSetzen(null);
+                    } catch (error) {
+                        this.fehler = error.message;
+                    }
+                    await this.laden();
+                },
                 async beenden() {
                     this.fehler = "";
                     try {
                         const gespeichert = await api("PUT", "/api/lernzeiten/" + this.laufend.id, {
-                            actual_end_time: new Date().toISOString(),
+                            actual_end_time: new Date(this.pausiertSeit || Date.now()).toISOString(),
                             status: "abgeschlossen",
                         });
                         this.rueckmeldung = "Gespeichert: " + minutenText(gespeichert.duration) + " gelernt.";
